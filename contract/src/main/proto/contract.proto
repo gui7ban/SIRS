@@ -10,9 +10,24 @@ message LoginRequest {
 }
 
 message LoginResponse {
+	repeated Document documents = 1;
+	 
+}
+
+message Document { 
+	string name = 1;
+	int32 relationship = 2;
+}
+message RegisterRequest {
+	string name = 1;
+	string password = 2;
+}
+
+message RegisterResponse {
 	
 }
 
 service remoteDocs {
 	rpc Login(LoginRequest) returns (LoginResponse);
+	rpc Register(RegisterRequest) returns (RegisterResponse);
 }
