@@ -1,4 +1,4 @@
-package java.sirs.remotedocs;
+package sirs.remotedocs;
 
 public class User {
     private String name;

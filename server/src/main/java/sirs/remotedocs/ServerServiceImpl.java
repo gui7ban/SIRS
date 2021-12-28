@@ -1,13 +1,14 @@
-package java.sirs.remotedocs;
+package sirs.remotedocs;
 import io.grpc.stub.StreamObserver;
 
-import java.sirs.remotedocs.grpc.RemoteDOCS;
-import java.sirs.remotedocs.grpc.RemoteDOCS.*;
-import java.sirs.remotedocs.grpc.RemoteDOCSGrpc;
+import sirs.remotedocs.domain.Server;
+import sirs.remotedocs.domain.exception.RemoteDocsException;
+import sirs.remotedocs.grpc.Contract.*;
+import sirs.remotedocs.grpc.RemoteDocsGrpc;
 
 import static io.grpc.Status.INVALID_ARGUMENT;
 
-public class ServerServiceImpl extends RemoteDOCSGrpc.RemoteDOCSImplBase
+public class ServerServiceImpl extends RemoteDocsGrpc.RemoteDocsImplBase
 {
 	private final Server server = new Server();
 

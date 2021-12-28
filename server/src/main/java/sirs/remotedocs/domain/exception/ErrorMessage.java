@@ -1,4 +1,4 @@
-package main.java.sirs.remotedocs.domain.exception;
+package sirs.remotedocs.domain.exception;
 
 public enum ErrorMessage {
     

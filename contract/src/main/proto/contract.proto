@@ -2,7 +2,7 @@
 // Protocol buffers definition for RemoteDocs server
 //
 syntax = "proto3";
-package java.sirs.remotedocs;
+package sirs.remotedocs.grpc;
 
 message LoginRequest {
 	string name = 1;
@@ -27,7 +27,7 @@ message RegisterResponse {
 	
 }
 
-service remoteDocs {
+service RemoteDocs {
 	rpc Login(LoginRequest) returns (LoginResponse);
 	rpc Register(RegisterRequest) returns (RegisterResponse);
 }
