@@ -87,7 +87,7 @@
 				<configuration>
 					<programs>
 						<program>
-							<mainClass>${mainclass}</mainClass>
+							<mainClass>${mainClass}</mainClass>
 							<id>${project.artifactId}</id>
 						</program>
 					</programs>

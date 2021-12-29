@@ -1,7 +1,14 @@
 package sirs.remotedocs;
 
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import sirs.remotedocs.grpc.RemoteDocsGrpc;
+import sirs.remotedocs.grpc.Contract.*;
+
+import java.rmi.Remote;
+
 public class ServerFrontend {
-    private SILOGrpc.SILOBlockingStub stub;
+    private RemoteDocsGrpc.RemoteDocsBlockingStub stub;
     private final ManagedChannel channel;
     private static final boolean DEBUG_FLAG = (System.getProperty("debug") != null);
 
@@ -15,20 +22,14 @@ public class ServerFrontend {
         final String target = host + ":" + port;
         debug("Target:" + target);
         channel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();
-        stub = SILOGrpc.newBlockingStub(channel);
+        stub = RemoteDocsGrpc.newBlockingStub(channel);
     }
 
-    public Silo.PingResponse ctrlPing(Silo.PingRequest request) {
-        return stub.ctrlPing(request);
+    public PingResponse ping(PingRequest request) {
+        return stub.ping(request);
     }
 
     public void channelEnd() {
         channel.shutdownNow();
     }
-
-    public Silo.ClearResponse ctrlClear(Silo.ClearRequest request) {
-        return stub.ctrlClear(request);
-    }
-
-
 }

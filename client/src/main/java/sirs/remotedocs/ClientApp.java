@@ -1,5 +1,7 @@
 package sirs.remotedocs;
 
+import sirs.remotedocs.grpc.Contract.*;
+
 public class ClientApp {
     public static void main(String[] args) {
         System.out.println(ClientApp.class.getSimpleName());
@@ -17,8 +19,8 @@ public class ClientApp {
         final String host = args[0];
 		final int port = Integer.parseInt(args[1]);
         ServerFrontend frontend = new ServerFrontend(host, port);
-		Silo.PingRequest pingRequest = Silo.PingRequest.newBuilder().build();
-		Silo.PingResponse pingResponse = frontend.ctrlPing(pingRequest);
+		PingRequest pingRequest = PingRequest.newBuilder().build();
+		PingResponse pingResponse = frontend.ping(pingRequest);
 		System.out.println(pingResponse.getOutputText());
 
 

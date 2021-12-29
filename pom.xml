@@ -28,9 +28,9 @@
     </properties>
     
     <modules>
-        <module>client</module>
-        <module>contract</module>
-        <module>server</module>
+        <module>Client</module>
+        <module>Contract</module>
+        <module>Server</module>
     </modules>
 
  <dependencies> </dependencies>

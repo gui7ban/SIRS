@@ -15,7 +15,7 @@ public class ServerServiceImpl extends RemoteDocsGrpc.RemoteDocsImplBase
 
 	@Override
 	public void ping(PingRequest request, StreamObserver<PingResponse> responseObserver) {
-			Silo.PingResponse response = Silo.PingResponse.newBuilder().
+			PingResponse response = PingResponse.newBuilder().
 					setOutputText(server.ping()).build();
 			responseObserver.onNext(response);
 			responseObserver.onCompleted();

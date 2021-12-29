@@ -57,7 +57,7 @@
 					</execution>
 				</executions>
 				<configuration>
-					<mainClass>${mainclass}</mainClass>
+					<mainClass>${mainClass}</mainClass>
 					<arguments>
 						<argument>${server.host}</argument>
 						<argument>${server.port}</argument>
@@ -79,7 +79,7 @@
 				<configuration>
 					<programs>
 						<program>
-							<mainClass>${mainclass}</mainClass>
+							<mainClass>${mainClass}</mainClass>
 							<id>${project.artifactId}</id>
 						</program>
 					</programs>
