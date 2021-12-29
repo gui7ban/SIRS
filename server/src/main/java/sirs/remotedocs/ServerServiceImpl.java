@@ -12,6 +12,15 @@ public class ServerServiceImpl extends RemoteDocsGrpc.RemoteDocsImplBase
 {
 	private final Server server = new Server();
 
+
+	@Override
+	public void ping(PingRequest request, StreamObserver<PingResponse> responseObserver) {
+			Silo.PingResponse response = Silo.PingResponse.newBuilder().
+					setOutputText(server.ping()).build();
+			responseObserver.onNext(response);
+			responseObserver.onCompleted();
+	}
+
 	@Override
 	public void login(LoginRequest request, StreamObserver<LoginResponse> responseObserver) {
 		try {

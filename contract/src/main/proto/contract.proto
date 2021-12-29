@@ -27,7 +27,17 @@ message RegisterResponse {
 	
 }
 
+message PingRequest {
+	// No arguments required
+}
+	
+message PingResponse {
+	string outputText = 1;
+}
+
 service RemoteDocs {
+
+	rpc Ping(PingRequest) returns (PingResponse);
 	rpc Login(LoginRequest) returns (LoginResponse);
 	rpc Register(RegisterRequest) returns (RegisterResponse);
 }

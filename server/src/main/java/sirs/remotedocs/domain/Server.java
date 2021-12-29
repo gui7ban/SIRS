@@ -11,5 +11,9 @@ public class Server {
 	public void register(String name, String password) throws RemoteDocsException {
 	
 	}
+
+	public synchronized String ping() {
+		return "I'm alive!";
+}
 	
 }
