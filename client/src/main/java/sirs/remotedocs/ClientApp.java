@@ -2,6 +2,26 @@ package sirs.remotedocs;
 
 public class ClientApp {
     public static void main(String[] args) {
+        System.out.println(ClientApp.class.getSimpleName());
+        System.out.printf("Received %d arguments%n", args.length);
+		for (int i = 0; i < args.length; i++) {
+			System.out.printf("arg[%d] = %s%n", i, args[i]);
+		}
+		// check arguments
+		if (args.length != 2) {
+			System.err.println("Argument(s) missing!");
+			System.err.printf("Usage: java %s port%n", ClientApp.class.getName());
+            System.exit(-1);
+		}
 
+        final String host = args[0];
+		final int port = Integer.parseInt(args[1]);
+        ServerFrontend frontend = new ServerFrontend(host, port);
+		Silo.PingRequest pingRequest = Silo.PingRequest.newBuilder().build();
+		Silo.PingResponse pingResponse = frontend.ctrlPing(pingRequest);
+		System.out.println(pingResponse.getOutputText());
+
+
+		frontend.channelEnd();
     }
 }

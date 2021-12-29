@@ -9,14 +9,18 @@ public class ServerApp {
 	public static void main(String[] args) {
 
 		System.out.println(ServerApp.class.getSimpleName());
+		for (int i = 0; i < args.length; i++) {
+			System.out.printf("arg[%d] = %s%n", i, args[i]);
+		}
+		if (args.length != 1) {
+			System.err.println("Invalid arguments");
+			System.err.printf("Usage: java %s <port>", ServerApp.class.getSimpleName());
+			System.exit(-1);
+		}
 
 		try {
-			if (args.length != 1) {
-				System.err.println("Invalid arguments");
-				System.err.printf("Usage: java %s <port>", ServerApp.class.getSimpleName());
-				System.exit(-1);
-			}
 
+		
 			int port = Integer.parseInt(args[0]);
 			ServerServiceImpl serverService = new ServerServiceImpl();
 			Server server = ServerBuilder
@@ -24,7 +28,12 @@ public class ServerApp {
 					.addService(serverService)
 					.build()
 					.start();
+
+			// Server threads are running in the background.
+			System.out.println("Server started");
+
 			server.awaitTermination();
+			
 		} catch (InterruptedException | IOException e) {
 			System.err.println("Something went wrong: " + e.getMessage());
 		}
