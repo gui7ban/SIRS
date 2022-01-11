@@ -3,9 +3,14 @@ package sirs.remotedocs;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 
+import java.io.File;
 import java.io.IOException;
 
 public class ServerApp {
+
+	private static String CERTIFICATE_CHAIN_FILE = "resources/cert.pem";
+	private static String CERTIFICATE_PRIVATE_KEY_FILE = "resources/key.pem";
+
 	public static void main(String[] args) {
 		Logger logger = new Logger("Server", "Main");
 
@@ -20,13 +25,12 @@ public class ServerApp {
 		}
 
 		try {
-
-		
 			int port = Integer.parseInt(args[0]);
 			ServerServiceImpl serverService = new ServerServiceImpl();
 			Server server = ServerBuilder
 					.forPort(port)
 					.addService(serverService)
+					.useTransportSecurity(new File(CERTIFICATE_CHAIN_FILE), new File(CERTIFICATE_PRIVATE_KEY_FILE))
 					.build()
 					.start();
 
