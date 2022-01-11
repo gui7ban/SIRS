@@ -10,21 +10,39 @@ message LoginRequest {
 }
 
 message LoginResponse {
-	repeated Document documents = 1;
-	 
+	repeated DocumentInfo documents = 1;
 }
 
-message Document { 
-	string name = 1;
-	int32 relationship = 2;
+message DocumentInfo {
+    int32 id = 1;
+	string name = 2;
+	int32 relationship = 3;
 }
+
+message DownloadRequest {
+    string name = 1;
+}
+
+message DownloadResponse {
+    bytes content = 1;
+}
+
+message UploadRequest {
+    string name = 1;
+    bytes content = 2;
+}
+
+message UploadResponse {
+
+}
+
 message RegisterRequest {
 	string name = 1;
 	string password = 2;
 }
 
 message RegisterResponse {
-	
+
 }
 
 message PingRequest {
@@ -36,8 +54,9 @@ message PingResponse {
 }
 
 service RemoteDocs {
-
 	rpc Ping(PingRequest) returns (PingResponse);
 	rpc Login(LoginRequest) returns (LoginResponse);
 	rpc Register(RegisterRequest) returns (RegisterResponse);
+	rpc Download(DownloadRequest) returns (DownloadResponse);
+	rpc Upload(UploadRequest) returns (UploadResponse);
 }
