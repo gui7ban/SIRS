@@ -7,6 +7,7 @@ import java.io.IOException;
 
 public class ServerApp {
 	public static void main(String[] args) {
+		Logger logger = new Logger("Server", "Main");
 
 		System.out.println(ServerApp.class.getSimpleName());
 		for (int i = 0; i < args.length; i++) {
@@ -30,7 +31,7 @@ public class ServerApp {
 					.start();
 
 			// Server threads are running in the background.
-			System.out.println("Server started");
+			logger.log("Server started on port: " + port);
 
 			server.awaitTermination();
 			
