@@ -1,9 +1,8 @@
 CREATE TABLE IF NOT EXISTS remotedocs_users
 (
-    id       SERIAL NOT NULL PRIMARY KEY,
-    username VARCHAR(30) NOT NULL,
+    username VARCHAR(30) NOT NULL PRIMARY KEY,
     password VARCHAR(50) NOT NULL,
-    salt     INTEGER NOT NULL
+    salt     INTEGER NOT NULL,
 );
 
 CREATE TABLE IF NOT EXISTS remotedocs_files
