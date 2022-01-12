@@ -21,7 +21,11 @@ public class ServerFrontend {
     public ServerFrontend(String host, int port) {
         final String target = host + ":" + port;
         debug("Target:" + target);
-        channel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();
+        channel = ManagedChannelBuilder
+                .forTarget(target)
+                .useTransportSecurity()
+                .overrideAuthority("localhost")
+                .build();
         stub = RemoteDocsGrpc.newBlockingStub(channel);
     }
 

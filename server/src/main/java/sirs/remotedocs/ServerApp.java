@@ -9,7 +9,7 @@ import java.io.IOException;
 public class ServerApp {
 
 	private static String CERTIFICATE_CHAIN_FILE = "resources/cert.pem";
-	private static String CERTIFICATE_PRIVATE_KEY_FILE = "resources/key.pem";
+	private static String CERTIFICATE_PRIVATE_KEY_FILE = "resources/unencrypted_key.pem";
 
 	public static void main(String[] args) {
 		Logger logger = new Logger("Server", "Main");
