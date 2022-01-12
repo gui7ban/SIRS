@@ -10,14 +10,14 @@ CREATE TABLE IF NOT EXISTS remotedocs_files
     id      SERIAL NOT NULL PRIMARY KEY,
     name    VARCHAR(100) NOT NULL,
     digest  VARCHAR(5000) NOT NULL,
-    ownerId INTEGER NOT NULL,
+    ownerId VARCHAR(30) NOT NULL,
     FOREIGN KEY (ownerId)
         REFERENCES remotedocs_users(ownerId) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS remotedocs_permissions
 (
-    userId     INTEGER NOT NULL,
+    userId     VARCHAR(30) NOT NULL,
     fileId     INTEGER NOT NULL,
     permission INTEGER NOT NULL,
     FOREIGN KEY (userId)
