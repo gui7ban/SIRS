@@ -24,7 +24,6 @@ public class ServerFrontend {
         channel = ManagedChannelBuilder
                 .forTarget(target)
                 .useTransportSecurity()
-                .overrideAuthority("localhost")
                 .build();
         stub = RemoteDocsGrpc.newBlockingStub(channel);
     }
