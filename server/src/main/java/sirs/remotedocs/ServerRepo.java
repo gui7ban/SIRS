@@ -1,14 +1,16 @@
 package sirs.remotedocs;
 
 import org.apache.ibatis.jdbc.ScriptRunner;
+import sirs.remotedocs.domain.User;
+import sirs.remotedocs.domain.exception.ErrorMessage;
+import sirs.remotedocs.domain.exception.RemoteDocsException;
 
+import javax.xml.transform.Result;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
+import java.util.logging.ErrorManager;
 
 public class ServerRepo {
 
@@ -40,5 +42,39 @@ public class ServerRepo {
 
     private Connection newConnection() throws SQLException {
         return DriverManager.getConnection(this.dbUrl, this.dbUsername, this.dbPassword);
+    }
+
+    public boolean loginUser(String username, String hashedPassword) throws RemoteDocsException {
+        String query = "SELECT COUNT(username) AS users FROM remotedocs_users WHERE username=? AND password=?";
+
+        try {
+            Connection connection = this.newConnection();
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setString(1, username);
+            statement.setString(2, hashedPassword);
+            statement.execute();
+
+            ResultSet resultSet = statement.executeQuery();
+            resultSet.next();
+            int numberOfUsers = resultSet.getInt("users");
+            return numberOfUsers > 0;
+        } catch (SQLException e) {
+            throw new RemoteDocsException(ErrorMessage.USER_NOT_FOUND);
+        }
+    }
+
+    public void registerUser(String username, String hashedPassword, int salt) throws RemoteDocsException {
+        String query = "INSERT INTO remotedocs_users (username, password, salt) VALUES (?, ?, ?)";
+
+        try {
+            Connection connection = this.newConnection();
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setString(1, username);
+            statement.setString(2, hashedPassword);
+            statement.setInt(3, salt);
+            statement.execute();
+        } catch (SQLException e) {
+            throw new RemoteDocsException(ErrorMessage.USER_ALREADY_EXISTS);
+        }
     }
 }
