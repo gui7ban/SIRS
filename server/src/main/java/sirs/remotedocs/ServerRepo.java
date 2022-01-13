@@ -27,9 +27,7 @@ public class ServerRepo {
 
         try {
             Connection connection = this.newConnection();
-            Statement stmt = connection.createStatement();
-            stmt.execute("CREATE DATABASE IF NOT EXISTS remotedocs_db");
-            this.logger.log("Database created successfully!");
+            this.logger.log("Connected to database successfully!");
 
             ScriptRunner scriptRunner = new ScriptRunner(connection);
             scriptRunner.setLogWriter(null);

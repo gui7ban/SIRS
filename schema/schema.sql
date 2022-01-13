@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS remotedocs_files
     digest  VARCHAR(5000) NOT NULL,
     ownerId VARCHAR(30) NOT NULL,
     FOREIGN KEY (ownerId)
-        REFERENCES remotedocs_users(ownerId) ON DELETE CASCADE
+        REFERENCES remotedocs_users(username) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS remotedocs_permissions
@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS remotedocs_permissions
     fileId     INTEGER NOT NULL,
     permission INTEGER NOT NULL,
     FOREIGN KEY (userId)
-        REFERENCES remotedocs_users(userId) ON DELETE CASCADE
+        REFERENCES remotedocs_users(username) ON DELETE CASCADE,
     FOREIGN KEY (fileId)
-        REFERENCES remotedocs_files(fileId) ON DELETE CASCADE
+        REFERENCES remotedocs_files(id) ON DELETE CASCADE
 );
