@@ -41,7 +41,7 @@ public class ServerRepo {
         return DriverManager.getConnection(this.dbUrl, this.dbUsername, this.dbPassword);
     }
 
-    public boolean loginUser(String username, String hashedPassword) throws RemoteDocsException {
+    public boolean loginUser(String username, String hashedPassword) {
         String query = "SELECT COUNT(username) AS users FROM remotedocs_users WHERE username=? AND password=?";
 
         try {
@@ -56,11 +56,12 @@ public class ServerRepo {
             int numberOfUsers = resultSet.getInt("users");
             return numberOfUsers > 0;
         } catch (SQLException e) {
-            throw new RemoteDocsException(ErrorMessage.INVALID_CREDENTIALS);
+            this.logger.log(e.getMessage());
+            return false;
         }
     }
 
-    public void registerUser(String username, String hashedPassword, int salt) throws RemoteDocsException {
+    public void registerUser(String username, String hashedPassword, int salt) {
         String query = "INSERT INTO remotedocs_users (username, password, salt) VALUES (?, ?, ?)";
 
         try {
@@ -71,7 +72,7 @@ public class ServerRepo {
             statement.setInt(3, salt);
             statement.execute();
         } catch (SQLException e) {
-            throw new RemoteDocsException(ErrorMessage.USER_ALREADY_EXISTS);
+            this.logger.log(e.getMessage());
         }
     }
 }

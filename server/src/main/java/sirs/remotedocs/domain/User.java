@@ -7,7 +7,7 @@ public class User {
    
     public User(String name, String password) {
         this.name = name;
-        this.hashedPassword = password ; // FIXME É PARA GUARDAR UMA HASH PASSWORD E NÃO PLAINTEXT.
+        this.hashedPassword = password ; // TODO: É PARA GUARDAR UMA HASH PASSWORD E NÃO PLAINTEXT.
 
     }
 
