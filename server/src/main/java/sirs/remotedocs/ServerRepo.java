@@ -1,16 +1,13 @@
 package sirs.remotedocs;
 
 import org.apache.ibatis.jdbc.ScriptRunner;
-import sirs.remotedocs.domain.User;
 import sirs.remotedocs.domain.exception.ErrorMessage;
 import sirs.remotedocs.domain.exception.RemoteDocsException;
 
-import javax.xml.transform.Result;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.sql.*;
-import java.util.logging.ErrorManager;
 
 public class ServerRepo {
 
@@ -59,7 +56,7 @@ public class ServerRepo {
             int numberOfUsers = resultSet.getInt("users");
             return numberOfUsers > 0;
         } catch (SQLException e) {
-            throw new RemoteDocsException(ErrorMessage.USER_NOT_FOUND);
+            throw new RemoteDocsException(ErrorMessage.INVALID_CREDENTIALS);
         }
     }
 
