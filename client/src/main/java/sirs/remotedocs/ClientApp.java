@@ -3,7 +3,7 @@ package sirs.remotedocs;
 import sirs.remotedocs.grpc.Contract.*;
 
 public class ClientApp {
-    public static void main(String[] args) {
+    /*public static void main(String[] args) {
         System.out.println(ClientApp.class.getSimpleName());
         System.out.printf("Received %d arguments%n", args.length);
 		for (int i = 0; i < args.length; i++) {
@@ -25,5 +25,5 @@ public class ClientApp {
 
 
 		frontend.channelEnd();
-    }
+    }*/
 }
