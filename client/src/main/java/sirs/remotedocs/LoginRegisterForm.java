@@ -9,16 +9,18 @@ package sirs.remotedocs;
  * @author tomaz
  */
 public class LoginRegisterForm extends javax.swing.JFrame {
-   
+    
+    private FormSelector formSelector;
     /**
      * Creates new form LoginRegisterForm
+     * @param formSelector
      * @param option
      */
-    public LoginRegisterForm(String option) {
+    public LoginRegisterForm(FormSelector formSelector, String option) {
         initComponents();
         LoginRegister_btn.setText(option); 
         back_btn.requestFocusInWindow();
-                    
+       this.formSelector = formSelector;
     }
    
     /**
@@ -82,6 +84,11 @@ public class LoginRegisterForm extends javax.swing.JFrame {
         LoginRegister_btn.setBackground(new java.awt.Color(255, 255, 204));
         LoginRegister_btn.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         LoginRegister_btn.setText("LOGIN");
+        LoginRegister_btn.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                LoginRegister_btnMouseClicked(evt);
+            }
+        });
 
         back_btn.setBackground(new java.awt.Color(255, 255, 204));
         back_btn.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
@@ -170,13 +177,8 @@ public class LoginRegisterForm extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void back_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_back_btnMouseClicked
-        new Menu().setVisible(true);        
-        this.setVisible(false);
+        formSelector.switchForm(this, formSelector.getMenu());
     }//GEN-LAST:event_back_btnMouseClicked
-
-    private void password_tfActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_password_tfActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_password_tfActionPerformed
 
     private void password_tfFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_password_tfFocusGained
         password_tf.setText("");
@@ -197,6 +199,14 @@ public class LoginRegisterForm extends javax.swing.JFrame {
             username_tf.setText("Username");
         }
     }//GEN-LAST:event_username_tfFocusLost
+
+    private void password_tfActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_password_tfActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_password_tfActionPerformed
+
+    private void LoginRegister_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_LoginRegister_btnMouseClicked
+        formSelector.switchForm(this, formSelector.getDoclist());
+    }//GEN-LAST:event_LoginRegister_btnMouseClicked
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

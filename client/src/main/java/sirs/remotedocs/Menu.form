@@ -102,7 +102,6 @@
           </Properties>
           <Events>
             <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="login_btnMouseClicked"/>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="login_btnActionPerformed"/>
           </Events>
         </Component>
         <Component class="javax.swing.JButton" name="register_btn">
