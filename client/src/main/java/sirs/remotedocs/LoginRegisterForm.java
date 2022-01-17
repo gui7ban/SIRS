@@ -20,7 +20,7 @@ public class LoginRegisterForm extends javax.swing.JFrame {
         initComponents();
         LoginRegister_btn.setText(option); 
         back_btn.requestFocusInWindow();
-       this.formSelector = formSelector;
+        this.formSelector = formSelector;
     }
    
     /**

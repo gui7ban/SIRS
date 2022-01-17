@@ -10,10 +10,11 @@ package sirs.remotedocs;
  */
 public class EditDocumentForm extends javax.swing.JFrame {
     private FormSelector formSelector;
-    /**
+   /**
      * Creates new form EditDocumentForm
+     * @param formSelector
      */
-    public EditDocumentForm(FormSelector formselector) {
+    public EditDocumentForm(FormSelector formSelector) {
         initComponents();
         this.formSelector = formSelector;
     }
