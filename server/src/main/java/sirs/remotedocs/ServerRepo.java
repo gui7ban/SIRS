@@ -1,6 +1,7 @@
 package sirs.remotedocs;
 
 import org.apache.ibatis.jdbc.ScriptRunner;
+import sirs.remotedocs.domain.User;
 import sirs.remotedocs.domain.exception.ErrorMessage;
 import sirs.remotedocs.domain.exception.RemoteDocsException;
 
@@ -61,7 +62,30 @@ public class ServerRepo {
         }
     }
 
-    public void registerUser(String username, String hashedPassword, int salt) {
+    public User getUser(String username) {
+        String query = "SELECT * FROM remotedocs_users WHERE username=?";
+
+        try {
+            Connection connection = this.newConnection();
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setString(1, username);
+
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                return new User(
+                        resultSet.getString("username"),
+                        resultSet.getString("password"),
+                        resultSet.getString("salt")
+                );
+            }
+        } catch (SQLException e) {
+            this.logger.log(e.getMessage());
+        }
+
+        return null;
+    }
+
+    public void registerUser(String username, String hashedPassword, String salt) {
         String query = "INSERT INTO remotedocs_users (username, password, salt) VALUES (?, ?, ?)";
 
         try {
@@ -69,7 +93,7 @@ public class ServerRepo {
             PreparedStatement statement = connection.prepareStatement(query);
             statement.setString(1, username);
             statement.setString(2, hashedPassword);
-            statement.setInt(3, salt);
+            statement.setString(3, salt);
             statement.execute();
         } catch (SQLException e) {
             this.logger.log(e.getMessage());

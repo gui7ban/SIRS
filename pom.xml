@@ -31,6 +31,7 @@
         <module>client</module>
         <module>contract</module>
         <module>server</module>
+        <module>crypto</module>
     </modules>
 
  <dependencies> </dependencies>
