@@ -5,13 +5,15 @@ public class User {
     private String hashedPassword;
     private String salt;
    
-    public User(String name, String password) {
+    public User(String name, String hashedPassword, String salt) {
         this.name = name;
-        this.hashedPassword = password ; // TODO: É PARA GUARDAR UMA HASH PASSWORD E NÃO PLAINTEXT.
-
+        this.hashedPassword = hashedPassword;
+        this.salt = salt;
     }
 
     public String getHashedPassword() {
         return hashedPassword;
     }
+
+    public String getSalt() { return salt; }
 }
