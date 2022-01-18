@@ -15,7 +15,7 @@ public class Server {
 	private ServerRepo serverRepo = new ServerRepo();
 	private Logger logger = new Logger("Server", "Core");
 
-	public boolean login(String name, String password) throws RemoteDocsException {
+	public void login(String name, String password) throws RemoteDocsException {
 		User user = this.serverRepo.getUser(name);
 		if (user == null)
 			throw new RemoteDocsException(ErrorMessage.USER_DOESNT_EXIST);
@@ -24,8 +24,6 @@ public class Server {
 			String hashedPassword = HashOperations.digest(password + user.getSalt());
 			if (!HashOperations.verifyDigest(hashedPassword, user.getHashedPassword()))
 				throw new RemoteDocsException(ErrorMessage.INVALID_CREDENTIALS);
-
-			return true;
 		} catch (NoSuchAlgorithmException e) {
 			this.logger.log(e.getMessage());
 			throw new RemoteDocsException(ErrorMessage.INTERNAL_ERROR);
