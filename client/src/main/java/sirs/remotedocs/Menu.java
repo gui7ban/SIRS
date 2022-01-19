@@ -9,14 +9,14 @@ package sirs.remotedocs;
  * @author tomaz
  */
 public class Menu extends javax.swing.JFrame {
-    private final FormSelector formSelector;
+    private final ClientApp clientApp;
     /**
      * Creates new form Menu
      * @param formSelector
      */
-    public Menu(FormSelector formSelector) {
+    public Menu(ClientApp formSelector) {
         initComponents();
-        this.formSelector = formSelector;
+        this.clientApp = formSelector;
     }
 
     /**
@@ -107,11 +107,11 @@ public class Menu extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void login_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_login_btnMouseClicked
-        formSelector.switchForm(this, formSelector.getLogin());
+        clientApp.switchForm(this, clientApp.getLogin());
     }//GEN-LAST:event_login_btnMouseClicked
 
     private void register_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_register_btnMouseClicked
-        formSelector.switchForm(this, formSelector.getRegister());
+        clientApp.switchForm(this, clientApp.getRegister());
     }//GEN-LAST:event_register_btnMouseClicked
 
 

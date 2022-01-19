@@ -10,17 +10,17 @@ package sirs.remotedocs;
  */
 public class LoginRegisterForm extends javax.swing.JFrame {
     
-    private FormSelector formSelector;
+    private ClientApp clientApp;
     /**
      * Creates new form LoginRegisterForm
      * @param formSelector
      * @param option
      */
-    public LoginRegisterForm(FormSelector formSelector, String option) {
+    public LoginRegisterForm(ClientApp formSelector, String option) {
         initComponents();
         LoginRegister_btn.setText(option); 
         back_btn.requestFocusInWindow();
-        this.formSelector = formSelector;
+        this.clientApp = formSelector;
     }
    
     /**
@@ -177,7 +177,7 @@ public class LoginRegisterForm extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void back_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_back_btnMouseClicked
-        formSelector.switchForm(this, formSelector.getMenu());
+        clientApp.switchForm(this, clientApp.getMenu());
     }//GEN-LAST:event_back_btnMouseClicked
 
     private void password_tfFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_password_tfFocusGained
@@ -205,7 +205,7 @@ public class LoginRegisterForm extends javax.swing.JFrame {
     }//GEN-LAST:event_password_tfActionPerformed
 
     private void LoginRegister_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_LoginRegister_btnMouseClicked
-        formSelector.switchForm(this, formSelector.getDoclist());
+        clientApp.switchForm(this, clientApp.getDoclist());
     }//GEN-LAST:event_LoginRegister_btnMouseClicked
 
 

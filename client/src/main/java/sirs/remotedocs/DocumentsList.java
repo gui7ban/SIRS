@@ -10,13 +10,13 @@ package sirs.remotedocs;
  */
 public class DocumentsList extends javax.swing.JFrame {
     
-    private FormSelector formSelector;
+    private ClientApp clientApp;
     /**
      * Creates new form Dashboard
      */
-    public DocumentsList(FormSelector formSelector) {
+    public DocumentsList(ClientApp formSelector) {
         initComponents();
-        this.formSelector = formSelector;
+        this.clientApp = formSelector;
     
     }
 
@@ -168,11 +168,11 @@ public class DocumentsList extends javax.swing.JFrame {
     }//GEN-LAST:event_new_btnMouseClicked
 
     private void open_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_open_btnMouseClicked
-        formSelector.switchForm(this, formSelector.getEditdoc());
+        clientApp.switchForm(this, clientApp.getEditdoc());
     }//GEN-LAST:event_open_btnMouseClicked
 
     private void logout_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_logout_btnMouseClicked
-        formSelector.switchForm(this, formSelector.getMenu());
+        clientApp.switchForm(this, clientApp.getMenu());
     }//GEN-LAST:event_logout_btnMouseClicked
 
     private void rename_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_rename_btnMouseClicked
