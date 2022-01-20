@@ -214,7 +214,11 @@ public class LoginRegisterForm extends javax.swing.JFrame {
             LoginRequest loginRequest = LoginRequest.newBuilder().setUsername(username).setPassword(password).build();
 		    try {
 			    LoginResponse loginResponse = clientApp.getFrontend().login(loginRequest);
-		    }
+                password_tf.setText("");
+                username_tf.setText("Username");
+                clientApp.switchForm(this, clientApp.getDoclist());
+                
+            }
 		    catch (StatusRuntimeException e) {
 			    System.out.println("Caught exception with description: " +
 			    e.getStatus().getDescription());
@@ -226,14 +230,17 @@ public class LoginRegisterForm extends javax.swing.JFrame {
             RegisterRequest registerRequest = RegisterRequest.newBuilder().setUsername(username).setPassword(password).build();
 		    try {
 			    RegisterResponse registerResponse = clientApp.getFrontend().register(registerRequest);
-		    }
+                password_tf.setText("");
+                username_tf.setText("Username");
+                clientApp.switchForm(this, clientApp.getDoclist());
+                
+            }
 		    catch (StatusRuntimeException e) {
 			    System.out.println("Caught exception with description: " +
 			    e.getStatus().getDescription());
                 //show message dialog
 		    }
         }     
-        clientApp.switchForm(this, clientApp.getDoclist());
     }//GEN-LAST:event_LoginRegister_btnMouseClicked
 
 
