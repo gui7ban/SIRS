@@ -6,10 +6,7 @@ import sirs.remotedocs.crypto.HashOperations;
 import sirs.remotedocs.domain.exception.ErrorMessage;
 import sirs.remotedocs.domain.exception.RemoteDocsException;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Base64;
@@ -79,43 +76,95 @@ public class Server {
 		}
 	}
 
-	public String createFile(String name, String username, String token) throws RemoteDocsException {
+	public int createFile(String name, String username, String token) throws RemoteDocsException {
 		if (!this.isSessionValid(username, token))
 			throw new RemoteDocsException(ErrorMessage.INVALID_SESSION);
 
-		String fileId = username + "/" + name;
-		File newFile = new File(fileId);
 		try {
-			if(!newFile.createNewFile())
+			int nextId = this.serverRepo.getMaxFileId() + 1;
+			File newFile = new File(String.valueOf(nextId));
+
+			boolean fileExists = this.serverRepo.fileExists(username, name);
+			if(fileExists || !newFile.createNewFile())
 				throw new RemoteDocsException(ErrorMessage.FILE_ALREADY_EXISTS);
 
-			this.serverRepo.createFile(fileId, name, username);
-			return fileId;
-		} catch (IOException e) {
+			this.serverRepo.createFile(nextId, name, username);
+			return nextId;
+		} catch (IOException | SQLException e) {
 			this.logger.log(e.getMessage());
 			throw new RemoteDocsException(ErrorMessage.INTERNAL_ERROR);
 		}
 	}
 
-	public void uploadFile(String id, byte[] content, String username, String token) throws RemoteDocsException {
+	public void uploadFile(int id, byte[] content, String username, String token) throws RemoteDocsException {
 		if (!this.isSessionValid(username, token))
 			throw new RemoteDocsException(ErrorMessage.INVALID_SESSION);
 
-		File file = new File(id);
+		File file = new File(String.valueOf(id));
 		if (!file.exists())
 			throw new RemoteDocsException(ErrorMessage.FILE_DOESNT_EXIST);
 
 		try {
+			FileDetails fileDetails = this.serverRepo.getFileDetails(id, username);
+			if (fileDetails == null)
+				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_ACCESS);
+			else if (fileDetails.getPermission() == 1)
+				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_WRITE);
+
 			FileOutputStream out = new FileOutputStream(file);
 			out.write(content);
+			out.close();
 
 			String fileDigest = HashOperations.digest(Base64.getEncoder().encodeToString(content), null);
-			// this.serverRepo.updateFile(id, name, fileDigest);
-		} catch (IOException | NoSuchAlgorithmException e) {
+			this.serverRepo.updateFileDigest(id, fileDigest);
+		} catch (IOException | NoSuchAlgorithmException | SQLException e) {
 			this.logger.log(e.getMessage());
 			throw new RemoteDocsException(ErrorMessage.INTERNAL_ERROR);
 		}
 	}
+
+	public FileDetails downloadFile(int id, String username, String token) throws RemoteDocsException {
+		if (!this.isSessionValid(username, token))
+			throw new RemoteDocsException(ErrorMessage.INVALID_SESSION);
+
+		try {
+			FileDetails fileDetails = this.serverRepo.getFileDetails(id, username);
+			if (fileDetails == null)
+				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_ACCESS);
+
+			File file = new File(String.valueOf(id));
+			if (!file.exists())
+				throw new RemoteDocsException(ErrorMessage.FILE_DOESNT_EXIST);
+
+			FileInputStream in = new FileInputStream(file);
+			fileDetails.setContent(in.readAllBytes());
+			in.close();
+
+			return fileDetails;
+		} catch (SQLException | IOException e) {
+			this.logger.log(e.getMessage());
+			throw new RemoteDocsException(ErrorMessage.INTERNAL_ERROR);
+		}
+	}
+
+	public void updateFileName(int id, String newName, String username, String token) throws RemoteDocsException {
+		if (!this.isSessionValid(username, token))
+			throw new RemoteDocsException(ErrorMessage.INVALID_SESSION);
+
+		try {
+			FileDetails fileDetails = this.serverRepo.getFileDetails(id, username);
+			if (fileDetails == null)
+				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_ACCESS);
+			else if (fileDetails.getPermission() != 0)
+				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_FILENAME_CHANGE);
+
+			this.serverRepo.updateFileName(id, newName);
+		} catch (SQLException e) {
+			this.logger.log(e.getMessage());
+			throw new RemoteDocsException(ErrorMessage.INTERNAL_ERROR);
+		}
+	}
+
 
 	public synchronized String ping() {
 		return "I'm alive!";

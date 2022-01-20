@@ -9,6 +9,9 @@ public enum ErrorMessage {
     INVALID_SESSION("This session does not contain a valid token/username match."),
     FILE_ALREADY_EXISTS("The file already exists for this user."),
     FILE_DOESNT_EXIST("The file does not exist."),
+    UNAUTHORIZED_ACCESS("You do not have enough permissions to access this file."),
+    UNAUTHORIZED_WRITE("You do not have enough permissions to edit this file."),
+    UNAUTHORIZED_FILENAME_CHANGE("You do not have enough permissions to change this file's name."),
     USER_ALREADY_EXISTS("The chosen username is not valid, please try another username");
     
     public final String label;

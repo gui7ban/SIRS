@@ -14,29 +14,41 @@ message LoginResponse {
 }
 
 message DocumentInfo {
-    string id = 1;
+    int32 id = 1;
 	string name = 2;
 	int32 relationship = 3;
 }
 
 message DownloadRequest {
-    string id = 1;
+    int32 id = 1;
     string username = 2;
     string token = 3;
 }
 
 message DownloadResponse {
     bytes content = 1;
+    string key = 2;
 }
 
 message UploadRequest {
-    string id = 1;
+    int32 id = 1;
     bytes content = 2;
     string username = 3;
     string token = 4;
 }
 
 message UploadResponse {
+
+}
+
+message UpdateFileNameRequest {
+    int32 id = 1;
+    string name = 2;
+    string username = 3;
+    string token = 4;
+}
+
+message UpdateFileNameResponse {
 
 }
 
@@ -47,7 +59,7 @@ message CreateFileRequest {
 }
 
 message CreateFileResponse {
-    string id = 1;
+    int32 id = 1;
 }
 
 message RegisterRequest {
@@ -74,4 +86,5 @@ service RemoteDocs {
 	rpc Download(DownloadRequest) returns (DownloadResponse);
 	rpc Upload(UploadRequest) returns (UploadResponse);
 	rpc CreateFile(CreateFileRequest) returns (CreateFileResponse);
+	rpc UpdateFileName(UpdateFileNameRequest) returns (UpdateFileNameResponse);
 }

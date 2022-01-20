@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS remotedocs_users
 
 CREATE TABLE IF NOT EXISTS remotedocs_files
 (
-    id      VARCHAR(201) NOT NULL PRIMARY KEY,
+    id      INTEGER NOT NULL PRIMARY KEY,
     name    VARCHAR(100) NOT NULL,
     digest  VARCHAR(500) NOT NULL
 );
@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS remotedocs_files
 CREATE TABLE IF NOT EXISTS remotedocs_permissions
 (
     userId     VARCHAR(100) NOT NULL,
-    fileId     VARCHAR(201) NOT NULL,
+    fileId     INTEGER NOT NULL,
     permission INTEGER NOT NULL,
     sharedKey  VARCHAR(500) NOT NULL,
     FOREIGN KEY (userId)
