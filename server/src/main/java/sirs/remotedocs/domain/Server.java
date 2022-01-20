@@ -90,8 +90,8 @@ public class Server {
 			return fileId;
 		} catch (IOException e) {
 			this.logger.log(e.getMessage());
+			throw new RemoteDocsException(ErrorMessage.INTERNAL_ERROR);
 		}
-
 	}
 
 	public synchronized String ping() {
