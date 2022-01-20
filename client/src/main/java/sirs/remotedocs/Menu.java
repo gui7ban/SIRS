@@ -34,8 +34,13 @@ public class Menu extends javax.swing.JFrame {
         login_btn = new javax.swing.JButton();
         register_btn = new javax.swing.JButton();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setResizable(false);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         jPanel2.setBackground(new java.awt.Color(255, 102, 51));
 
@@ -113,6 +118,12 @@ public class Menu extends javax.swing.JFrame {
     private void register_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_register_btnMouseClicked
         clientApp.switchForm(this, clientApp.getRegister());
     }//GEN-LAST:event_register_btnMouseClicked
+
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+       this.dispose();
+       System.exit(0);   
+       //adicionar o channel close
+    }//GEN-LAST:event_formWindowClosing
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
