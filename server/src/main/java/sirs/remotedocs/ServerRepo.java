@@ -46,12 +46,12 @@ public class ServerRepo {
 
         try {
             Connection connection = this.newConnection();
-            PreparedStatement statement = connection.prepareStatement(query);
-            statement.setString(1, username);
-            statement.setString(2, hashedPassword);
-            statement.execute();
+            PreparedStatement loginUser = connection.prepareStatement(query);
+            loginUser.setString(1, username);
+            loginUser.setString(2, hashedPassword);
+            loginUser.execute();
 
-            ResultSet resultSet = statement.executeQuery();
+            ResultSet resultSet = loginUser.executeQuery();
             resultSet.next();
             int numberOfUsers = resultSet.getInt("users");
             return numberOfUsers > 0;
@@ -89,11 +89,11 @@ public class ServerRepo {
 
         try {
             Connection connection = this.newConnection();
-            PreparedStatement statement = connection.prepareStatement(query);
-            statement.setString(1, username);
-            statement.setString(2, hashedPassword);
-            statement.setString(3, salt);
-            statement.execute();
+            PreparedStatement registerUser = connection.prepareStatement(query);
+            registerUser.setString(1, username);
+            registerUser.setString(2, hashedPassword);
+            registerUser.setString(3, salt);
+            registerUser.execute();
         } catch (SQLException e) {
             this.logger.log(e.getMessage());
         }
@@ -120,5 +120,16 @@ public class ServerRepo {
         } catch (SQLException e) {
             this.logger.log(e.getMessage());
         }
+    }
+
+    public void updateFile(String id, String name, String digest) throws SQLException {
+        String query = "UPDATE remotedocs_files SET name =?, digest=? WHERE id=?";
+
+        Connection connection = this.newConnection();
+        PreparedStatement updateFile = connection.prepareStatement(query);
+        updateFile.setString(1, name);
+        updateFile.setString(2, digest);
+        updateFile.setString(3, id);
+        updateFile.execute();
     }
 }

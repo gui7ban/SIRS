@@ -11,6 +11,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.Base64;
 import java.util.Map;
 import java.util.TreeMap;
@@ -96,12 +97,11 @@ public class Server {
 		}
 	}
 
-	public void uploadFile(String name, byte[] content, String username, String token) throws RemoteDocsException {
+	public void uploadFile(String id, byte[] content, String username, String token) throws RemoteDocsException {
 		if (!this.isSessionValid(username, token))
 			throw new RemoteDocsException(ErrorMessage.INVALID_SESSION);
 
-		String fileId = username + "/" + name;
-		File file = new File(fileId);
+		File file = new File(id);
 		if (!file.exists())
 			throw new RemoteDocsException(ErrorMessage.FILE_DOESNT_EXIST);
 
@@ -110,6 +110,7 @@ public class Server {
 			out.write(content);
 
 			String fileDigest = HashOperations.digest(Base64.getEncoder().encodeToString(content), null);
+			// this.serverRepo.updateFile(id, name, fileDigest);
 		} catch (IOException | NoSuchAlgorithmException e) {
 			this.logger.log(e.getMessage());
 			throw new RemoteDocsException(ErrorMessage.INTERNAL_ERROR);

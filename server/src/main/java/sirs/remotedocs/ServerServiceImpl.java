@@ -56,4 +56,11 @@ public class ServerServiceImpl extends RemoteDocsGrpc.RemoteDocsImplBase
 			responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
 		}
 	}
+
+	@Override
+	public void uploadFile(UploadRequest request, StreamObserver<UploadResponse> responseObserver) {
+		try {
+			server.uploadFile(request.get);
+		}
+	}
 }
