@@ -1,6 +1,7 @@
 package sirs.remotedocs;
 
 import org.apache.ibatis.jdbc.ScriptRunner;
+import sirs.remotedocs.domain.Permissions;
 import sirs.remotedocs.domain.User;
 
 import java.io.BufferedReader;
@@ -98,16 +99,24 @@ public class ServerRepo {
         }
     }
 
-    public void createFile(String id, String name) {
+    public void createFile(String id, String name, String username) {
         String query = "INSERT INTO remotedocs_files (id, name, digest) VALUES (?, ?, ?)";
+        String query2 = "INSERT INTO remotedocs_permissions (userId, fileId, permission, sharedKey) VALUES (?, ?, ?, ?)";
 
         try {
             Connection connection = this.newConnection();
-            PreparedStatement statement = connection.prepareStatement(query);
-            statement.setString(1, id);
-            statement.setString(2, name);
-            statement.setString(3, "");
-            statement.execute();
+            PreparedStatement createFile = connection.prepareStatement(query);
+            PreparedStatement addFilePermissions = connection.prepareStatement(query2);
+            createFile.setString(1, id);
+            createFile.setString(2, name);
+            createFile.setString(3, "");
+            createFile.execute();
+
+            addFilePermissions.setString(1, username);
+            addFilePermissions.setString(2, id);
+            addFilePermissions.setInt(3, Permissions.OWNER.getValue());
+            addFilePermissions.setString(4, ""); // TODO: Add shared key.
+            addFilePermissions.execute();
         } catch (SQLException e) {
             this.logger.log(e.getMessage());
         }

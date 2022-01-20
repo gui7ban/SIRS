@@ -7,6 +7,8 @@ import sirs.remotedocs.domain.exception.ErrorMessage;
 import sirs.remotedocs.domain.exception.RemoteDocsException;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
@@ -86,9 +88,29 @@ public class Server {
 			if(!newFile.createNewFile())
 				throw new RemoteDocsException(ErrorMessage.FILE_ALREADY_EXISTS);
 
-			this.serverRepo.createFile(fileId, name);
+			this.serverRepo.createFile(fileId, name, username);
 			return fileId;
 		} catch (IOException e) {
+			this.logger.log(e.getMessage());
+			throw new RemoteDocsException(ErrorMessage.INTERNAL_ERROR);
+		}
+	}
+
+	public void uploadFile(String name, byte[] content, String username, String token) throws RemoteDocsException {
+		if (!this.isSessionValid(username, token))
+			throw new RemoteDocsException(ErrorMessage.INVALID_SESSION);
+
+		String fileId = username + "/" + name;
+		File file = new File(fileId);
+		if (!file.exists())
+			throw new RemoteDocsException(ErrorMessage.FILE_DOESNT_EXIST);
+
+		try {
+			FileOutputStream out = new FileOutputStream(file);
+			out.write(content);
+
+			String fileDigest = HashOperations.digest(Base64.getEncoder().encodeToString(content), null);
+		} catch (IOException | NoSuchAlgorithmException e) {
 			this.logger.log(e.getMessage());
 			throw new RemoteDocsException(ErrorMessage.INTERNAL_ERROR);
 		}
