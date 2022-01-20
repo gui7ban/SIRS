@@ -39,7 +39,13 @@ public class DocumentsList extends javax.swing.JFrame {
         share_btn = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
+        setResizable(false);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         jPanel1.setBackground(new java.awt.Color(255, 102, 51));
 
@@ -183,6 +189,11 @@ public class DocumentsList extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_share_btnMouseClicked
 
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        this.dispose();
+        clientApp.getFrontend().channelEnd();
+        System.exit(0);   
+     }//GEN-LAST:event_formWindowClosing
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton delete_btn;
