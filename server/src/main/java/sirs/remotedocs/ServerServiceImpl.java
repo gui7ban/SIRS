@@ -57,10 +57,7 @@ public class ServerServiceImpl extends RemoteDocsGrpc.RemoteDocsImplBase
 		}
 	}
 
-	@Override
 	public void uploadFile(UploadRequest request, StreamObserver<UploadResponse> responseObserver) {
-		try {
-			server.uploadFile(request.get);
-		}
+		// TODO: Implement this method.
 	}
 }
