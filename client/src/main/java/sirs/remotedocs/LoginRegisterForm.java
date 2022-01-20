@@ -6,6 +6,7 @@ package sirs.remotedocs;
 
 import sirs.remotedocs.grpc.Contract.*;
 import io.grpc.StatusRuntimeException;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -222,8 +223,7 @@ public class LoginRegisterForm extends javax.swing.JFrame {
 		    catch (StatusRuntimeException e) {
 			    System.out.println("Caught exception with description: " +
 			    e.getStatus().getDescription());
-                
-                //show message dialog;
+                JOptionPane.showMessageDialog(null, e.getStatus().getDescription());
 		    }
         }
         else{
@@ -238,7 +238,7 @@ public class LoginRegisterForm extends javax.swing.JFrame {
 		    catch (StatusRuntimeException e) {
 			    System.out.println("Caught exception with description: " +
 			    e.getStatus().getDescription());
-                //show message dialog
+                JOptionPane.showMessageDialog(null, e.getStatus().getDescription());
 		    }
         }     
     }//GEN-LAST:event_LoginRegister_btnMouseClicked
