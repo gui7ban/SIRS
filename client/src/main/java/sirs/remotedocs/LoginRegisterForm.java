@@ -37,24 +37,53 @@ public class LoginRegisterForm extends javax.swing.JFrame {
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
+        username_tf = new javax.swing.JTextField();
+        password_tf = new javax.swing.JPasswordField();
         LoginRegister_btn = new javax.swing.JButton();
         back_btn = new javax.swing.JButton();
-        jLabel3 = new javax.swing.JLabel();
-        username_layeredPane = new javax.swing.JLayeredPane();
-        username_tf = new javax.swing.JTextField();
-        jLabel1 = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
-        username_label = new javax.swing.JLabel();
-        password_layeredPane = new javax.swing.JLayeredPane();
-        password_tf = new javax.swing.JPasswordField();
-        jLabel2 = new javax.swing.JLabel();
-        password_label = new javax.swing.JLabel();
         jSeparator2 = new javax.swing.JSeparator();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setResizable(false);
 
         jPanel1.setBackground(new java.awt.Color(255, 102, 51));
+
+        username_tf.setBackground(new java.awt.Color(255, 102, 51));
+        username_tf.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
+        username_tf.setForeground(new java.awt.Color(255, 255, 255));
+        username_tf.setText("Username");
+        username_tf.setBorder(null);
+        username_tf.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                username_tfFocusGained(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                username_tfFocusLost(evt);
+            }
+        });
+
+        password_tf.setBackground(new java.awt.Color(255, 102, 51));
+        password_tf.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
+        password_tf.setForeground(new java.awt.Color(255, 255, 255));
+        password_tf.setText("password");
+        password_tf.setBorder(null);
+        password_tf.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                password_tfFocusGained(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                password_tfFocusLost(evt);
+            }
+        });
+        password_tf.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                password_tfActionPerformed(evt);
+            }
+        });
 
         LoginRegister_btn.setBackground(new java.awt.Color(255, 255, 204));
         LoginRegister_btn.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
@@ -74,173 +103,73 @@ public class LoginRegisterForm extends javax.swing.JFrame {
             }
         });
 
-        jLabel3.setFont(new java.awt.Font("Alien Encounters", 1, 30)); // NOI18N
-        jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel3.setText("REMOTE DOCS");
-
-        username_tf.setBackground(new java.awt.Color(255, 102, 51));
-        username_tf.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
-        username_tf.setForeground(new java.awt.Color(255, 255, 255));
-        username_tf.setBorder(null);
-        username_tf.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                username_tfFocusGained(evt);
-            }
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                username_tfFocusLost(evt);
-            }
-        });
-
-        jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons8-pessoa-do-sexo-masculino-24.png"))); // NOI18N
-
         jSeparator1.setForeground(new java.awt.Color(255, 255, 255));
-
-        username_label.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
-        username_label.setForeground(new java.awt.Color(255, 255, 255));
-        username_label.setText("Username");
-
-        username_layeredPane.setLayer(username_tf, javax.swing.JLayeredPane.DEFAULT_LAYER);
-        username_layeredPane.setLayer(jLabel1, javax.swing.JLayeredPane.DEFAULT_LAYER);
-        username_layeredPane.setLayer(jSeparator1, javax.swing.JLayeredPane.DEFAULT_LAYER);
-        username_layeredPane.setLayer(username_label, javax.swing.JLayeredPane.DEFAULT_LAYER);
-
-        javax.swing.GroupLayout username_layeredPaneLayout = new javax.swing.GroupLayout(username_layeredPane);
-        username_layeredPane.setLayout(username_layeredPaneLayout);
-        username_layeredPaneLayout.setHorizontalGroup(
-            username_layeredPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(username_layeredPaneLayout.createSequentialGroup()
-                .addGap(6, 6, 6)
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(username_layeredPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 202, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(username_label, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(username_layeredPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(username_layeredPaneLayout.createSequentialGroup()
-                    .addGap(36, 36, 36)
-                    .addComponent(username_tf, javax.swing.GroupLayout.PREFERRED_SIZE, 202, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(13, Short.MAX_VALUE)))
-        );
-        username_layeredPaneLayout.setVerticalGroup(
-            username_layeredPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, username_layeredPaneLayout.createSequentialGroup()
-                .addContainerGap(39, Short.MAX_VALUE)
-                .addGroup(username_layeredPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel1)
-                    .addComponent(username_label, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18))
-            .addGroup(username_layeredPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(username_layeredPaneLayout.createSequentialGroup()
-                    .addGap(36, 36, 36)
-                    .addComponent(username_tf, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(36, Short.MAX_VALUE)))
-        );
-
-        password_tf.setBackground(new java.awt.Color(255, 102, 51));
-        password_tf.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
-        password_tf.setForeground(new java.awt.Color(255, 255, 255));
-        password_tf.setBorder(null);
-        password_tf.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                password_tfFocusGained(evt);
-            }
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                password_tfFocusLost(evt);
-            }
-        });
-        password_tf.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                password_tfActionPerformed(evt);
-            }
-        });
-
-        jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons8-desbloquear-24.png"))); // NOI18N
-
-        password_label.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
-        password_label.setForeground(new java.awt.Color(255, 255, 255));
-        password_label.setText("password");
 
         jSeparator2.setForeground(new java.awt.Color(255, 255, 255));
 
-        password_layeredPane.setLayer(password_tf, javax.swing.JLayeredPane.DEFAULT_LAYER);
-        password_layeredPane.setLayer(jLabel2, javax.swing.JLayeredPane.DEFAULT_LAYER);
-        password_layeredPane.setLayer(password_label, javax.swing.JLayeredPane.DEFAULT_LAYER);
-        password_layeredPane.setLayer(jSeparator2, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons8-pessoa-do-sexo-masculino-24.png"))); // NOI18N
 
-        javax.swing.GroupLayout password_layeredPaneLayout = new javax.swing.GroupLayout(password_layeredPane);
-        password_layeredPane.setLayout(password_layeredPaneLayout);
-        password_layeredPaneLayout.setHorizontalGroup(
-            password_layeredPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(password_layeredPaneLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(password_layeredPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 202, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(password_tf, javax.swing.GroupLayout.PREFERRED_SIZE, 202, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(password_layeredPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(password_layeredPaneLayout.createSequentialGroup()
-                    .addGap(48, 48, 48)
-                    .addComponent(password_label, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(96, Short.MAX_VALUE)))
-        );
-        password_layeredPaneLayout.setVerticalGroup(
-            password_layeredPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(password_layeredPaneLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(password_layeredPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel2)
-                    .addComponent(password_tf, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE))
-            .addGroup(password_layeredPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(password_layeredPaneLayout.createSequentialGroup()
-                    .addGap(25, 25, 25)
-                    .addComponent(password_label, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-        );
+        jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons8-desbloquear-24.png"))); // NOI18N
+
+        jLabel3.setFont(new java.awt.Font("Alien Encounters", 1, 30)); // NOI18N
+        jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel3.setText("REMOTE DOCS");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(47, Short.MAX_VALUE)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(password_layeredPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(username_layeredPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(57, 57, 57)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(back_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(42, 42, 42)
-                        .addComponent(LoginRegister_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(56, 56, 56))
+                        .addComponent(jLabel2)
+                        .addGap(18, 18, 18)
+                        .addComponent(password_tf, javax.swing.GroupLayout.PREFERRED_SIZE, 202, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addGroup(jPanel1Layout.createSequentialGroup()
+                            .addComponent(jLabel1)
+                            .addGap(18, 18, 18)
+                            .addComponent(username_tf, javax.swing.GroupLayout.PREFERRED_SIZE, 202, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 202, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 202, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createSequentialGroup()
+                            .addComponent(back_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(LoginRegister_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap(64, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(33, 33, 33)
                 .addComponent(jLabel3)
-                .addGap(34, 34, 34)
-                .addComponent(username_layeredPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(65, 65, 65)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel1)
+                    .addComponent(username_tf, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(password_layeredPane, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(54, 54, 54)
+                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(20, 20, 20)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel2)
+                    .addComponent(password_tf, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(55, 55, 55)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(back_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(LoginRegister_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(63, Short.MAX_VALUE))
+                .addContainerGap(89, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -324,11 +253,7 @@ public class LoginRegisterForm extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
-    private javax.swing.JLabel password_label;
-    private javax.swing.JLayeredPane password_layeredPane;
     private javax.swing.JPasswordField password_tf;
-    private javax.swing.JLabel username_label;
-    private javax.swing.JLayeredPane username_layeredPane;
     private javax.swing.JTextField username_tf;
     // End of variables declaration//GEN-END:variables
 }
