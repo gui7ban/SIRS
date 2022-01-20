@@ -1,8 +1,5 @@
 .idea/
-client/target/
-server/target/
-contract/target/
-crypto/target/
+target/
 *.class
 *.iml
-/client/src/main/java/sirs/remotedocs/GUI/target/
+

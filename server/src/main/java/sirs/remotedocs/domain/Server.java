@@ -13,7 +13,6 @@ import java.util.Base64;
 import java.util.Map;
 import java.util.TreeMap;
 
-
 public class Server {
 
 	private ServerRepo serverRepo = new ServerRepo();
@@ -21,11 +20,10 @@ public class Server {
 	private Map<String, String> accessTokens = new TreeMap<>();
 
 	public void login(String name, String password) throws RemoteDocsException {
-		User user = this.serverRepo.getUser(name);
-		if (user == null)
-			throw new RemoteDocsException(ErrorMessage.INVALID_CREDENTIALS);
-
 		try {
+			User user = this.serverRepo.getUser(name);
+			if (user == null)
+				throw new RemoteDocsException(ErrorMessage.INVALID_CREDENTIALS);
 			byte[] salt = Base64.getDecoder().decode(user.getSalt());
 			if (!HashOperations.verifyDigest(password, user.getHashedPassword(), salt))
 				throw new RemoteDocsException(ErrorMessage.INVALID_CREDENTIALS);
@@ -35,7 +33,7 @@ public class Server {
 
 			// Add the token to the access tokens map:
 			this.accessTokens.put(name, accessToken);
-		} catch (NoSuchAlgorithmException e) {
+		} catch (NoSuchAlgorithmException | SQLException e) {
 			this.logger.log(e.getMessage());
 			throw new RemoteDocsException(ErrorMessage.INTERNAL_ERROR);
 		}
@@ -46,33 +44,37 @@ public class Server {
 	}
 
 	public void logout(String username, String token) throws RemoteDocsException {
-		User user = this.serverRepo.getUser(username);
-		if (user == null)
-			throw new RemoteDocsException(ErrorMessage.INVALID_CREDENTIALS);
-		else if (!this.isSessionValid(username, token))
-			throw new RemoteDocsException(ErrorMessage.INVALID_SESSION);
+		try {
+			User user = this.serverRepo.getUser(username);
+			if (user == null)
+				throw new RemoteDocsException(ErrorMessage.INVALID_CREDENTIALS);
+			else if (!this.isSessionValid(username, token))
+				throw new RemoteDocsException(ErrorMessage.INVALID_SESSION);
 
-		this.accessTokens.remove(username);
+			this.accessTokens.remove(username);
+		} catch (SQLException e) {
+			this.logger.log(e.getMessage());
+			throw new RemoteDocsException(ErrorMessage.INTERNAL_ERROR);
+		}
 	}
 	
 	public void register(String name, String password) throws RemoteDocsException {
-
-		User user = this.serverRepo.getUser(name);
-		if (user != null)
-			throw new RemoteDocsException(ErrorMessage.USER_ALREADY_EXISTS);
-		else if(password != null && password.length() < 7)
-			throw new RemoteDocsException(ErrorMessage.INVALID_PASSWORD);
-		else {
-			try {
+		try {
+			User user = this.serverRepo.getUser(name);
+			if (user != null)
+				throw new RemoteDocsException(ErrorMessage.USER_ALREADY_EXISTS);
+			else if(password != null && password.length() < 7)
+				throw new RemoteDocsException(ErrorMessage.INVALID_PASSWORD);
+			else {
 				byte[] newSalt = HashOperations.generateSalt();
 				String saltInString = Base64.getEncoder().encodeToString(newSalt);
 				newSalt = Base64.getDecoder().decode(saltInString);
 				String hashedPassword = HashOperations.digest(password,newSalt);
 				this.serverRepo.registerUser(name, hashedPassword, saltInString);
-			} catch (NoSuchAlgorithmException e) {
-				this.logger.log(e.getMessage());
-				throw new RemoteDocsException(ErrorMessage.INTERNAL_ERROR);
 			}
+		} catch (NoSuchAlgorithmException | SQLException e) {
+			this.logger.log(e.getMessage());
+			throw new RemoteDocsException(ErrorMessage.INTERNAL_ERROR);
 		}
 	}
 

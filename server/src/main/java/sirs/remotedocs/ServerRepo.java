@@ -42,85 +42,53 @@ public class ServerRepo {
         return DriverManager.getConnection(this.dbUrl, this.dbUsername, this.dbPassword);
     }
 
-    public boolean loginUser(String username, String hashedPassword) {
-        String query = "SELECT COUNT(username) AS users FROM remotedocs_users WHERE username=? AND password=?";
-
-        try {
-            Connection connection = this.newConnection();
-            PreparedStatement loginUser = connection.prepareStatement(query);
-            loginUser.setString(1, username);
-            loginUser.setString(2, hashedPassword);
-            loginUser.execute();
-
-            ResultSet resultSet = loginUser.executeQuery();
-            resultSet.next();
-            int numberOfUsers = resultSet.getInt("users");
-            return numberOfUsers > 0;
-        } catch (SQLException e) {
-            this.logger.log(e.getMessage());
-            return false;
-        }
-    }
-
-    public User getUser(String username) {
+    public User getUser(String username) throws SQLException {
         String query = "SELECT * FROM remotedocs_users WHERE username=?";
 
-        try {
-            Connection connection = this.newConnection();
-            PreparedStatement statement = connection.prepareStatement(query);
-            statement.setString(1, username);
+        Connection connection = this.newConnection();
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setString(1, username);
 
-            ResultSet resultSet = statement.executeQuery();
-            if (resultSet.next()) {
-                return new User(
-                        resultSet.getString("username"),
-                        resultSet.getString("password"),
-                        resultSet.getString("salt")
-                );
-            }
-        } catch (SQLException e) {
-            this.logger.log(e.getMessage());
+        ResultSet resultSet = statement.executeQuery();
+        if (resultSet.next()) {
+            return new User(
+                    resultSet.getString("username"),
+                    resultSet.getString("password"),
+                    resultSet.getString("salt")
+            );
         }
 
         return null;
     }
 
-    public void registerUser(String username, String hashedPassword, String salt) {
+    public void registerUser(String username, String hashedPassword, String salt) throws SQLException {
         String query = "INSERT INTO remotedocs_users (username, password, salt) VALUES (?, ?, ?)";
 
-        try {
-            Connection connection = this.newConnection();
-            PreparedStatement registerUser = connection.prepareStatement(query);
-            registerUser.setString(1, username);
-            registerUser.setString(2, hashedPassword);
-            registerUser.setString(3, salt);
-            registerUser.executeQuery();
-        } catch (SQLException e) {
-            this.logger.log(e.getMessage());
-        }
+        Connection connection = this.newConnection();
+        PreparedStatement registerUser = connection.prepareStatement(query);
+        registerUser.setString(1, username);
+        registerUser.setString(2, hashedPassword);
+        registerUser.setString(3, salt);
+        registerUser.executeQuery();
     }
 
-    public void createFile(int id, String name, String username) {
+    public void createFile(int id, String name, String username) throws SQLException {
         String query = "INSERT INTO remotedocs_files (id, name, digest) VALUES (?, ?, ?)";
         String query2 = "INSERT INTO remotedocs_permissions (userId, fileId, permission, sharedKey) VALUES (?, ?, ?, ?)";
 
-        try {
-            Connection connection = this.newConnection();
-            PreparedStatement createFile = connection.prepareStatement(query);
-            PreparedStatement addFilePermissions = connection.prepareStatement(query2);
-            createFile.setInt(1, id);
-            createFile.setString(2, name);
-            createFile.setString(3, "");
-            createFile.executeQuery();
+        Connection connection = this.newConnection();
+        PreparedStatement createFile = connection.prepareStatement(query);
+        PreparedStatement addFilePermissions = connection.prepareStatement(query2);
+        createFile.setInt(1, id);
+        createFile.setString(2, name);
+        createFile.setString(3, "");
+        createFile.executeQuery();
 
-            addFilePermissions.setString(1, username);
-            addFilePermissions.setInt(2, id);
-            addFilePermissions.setInt(3, Permissions.OWNER.getValue());
-            addFilePermissions.setString(4, ""); // TODO: Add encrypted shared key.
-            addFilePermissions.executeQuery();
-        } catch (SQLException e) {
-            this.logger.log(e.getMessage());
-        }
+        addFilePermissions.setString(1, username);
+        addFilePermissions.setInt(2, id);
+        addFilePermissions.setInt(3, Permissions.OWNER.getValue());
+        addFilePermissions.setString(4, ""); // TODO: Add encrypted shared key.
+        addFilePermissions.executeQuery();
     }
 
     public boolean fileExists(String username, String name) throws SQLException {
