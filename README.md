@@ -13,3 +13,9 @@ a TLS certificate must be created, along with a private key.
 
 - Finally, we must add the TLS certificate (`cert.pem` file) to java's cacerts keystore:
   `keytool -import -alias sirs -keystore "/etc/ssl/certs/java/cacerts" -file cert.pem`
+
+- To establish a connection with the database, it is necessary to create env variables:
+  `export DB_URL=jdbc:postgresql://localhost:5432/SIRS`
+  `export DB_USERNAME=postgres`
+  `export DB_PASSWORD=SIRS2022`
+  `export DB_DIR=~/Transferências/SIRS/SIRS_Project/schema/schema.sql`
