@@ -123,7 +123,6 @@ public class Menu extends javax.swing.JFrame {
        this.dispose();
        clientApp.getFrontend().channelEnd();
        System.exit(0);   
-       //adicionar o channel close
     }//GEN-LAST:event_formWindowClosing
 
 
