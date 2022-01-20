@@ -42,8 +42,8 @@ public class ServerServiceImpl extends RemoteDocsGrpc.RemoteDocsImplBase
 	@Override
 	public void register(RegisterRequest request, StreamObserver<RegisterResponse> responseObserver) {
 		try {
-			server.register(request.getUsername(), request.getPassword());
-			responseObserver.onNext(RegisterResponse.newBuilder().build());
+			String accessToken = server.register(request.getUsername(), request.getPassword());
+			responseObserver.onNext(RegisterResponse.newBuilder().setToken(accessToken).build());
 			responseObserver.onCompleted();
 		}
 		catch (RemoteDocsException e) {

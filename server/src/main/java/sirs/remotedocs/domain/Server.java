@@ -59,7 +59,7 @@ public class Server {
 		}
 	}
 	
-	public void register(String name, String password) throws RemoteDocsException {
+	public String register(String name, String password) throws RemoteDocsException {
 		try {
 			User user = this.serverRepo.getUser(name);
 			if (user != null)
@@ -72,6 +72,13 @@ public class Server {
 				newSalt = Base64.getDecoder().decode(saltInString);
 				String hashedPassword = HashOperations.digest(password,newSalt);
 				this.serverRepo.registerUser(name, hashedPassword, saltInString);
+
+				// Generate access token for session:
+				String accessToken = Base64.getEncoder().encodeToString(HashOperations.generateSalt());
+
+				// Add the token to the access tokens map:
+				this.accessTokens.put(name, accessToken);
+				return accessToken;
 			}
 		} catch (NoSuchAlgorithmException | SQLException e) {
 			this.logger.log(e.getMessage());

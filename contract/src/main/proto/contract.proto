@@ -69,7 +69,7 @@ message RegisterRequest {
 }
 
 message RegisterResponse {
-
+    string token = 1;
 }
 
 message PingRequest {
