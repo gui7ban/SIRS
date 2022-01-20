@@ -121,6 +121,7 @@ public class Menu extends javax.swing.JFrame {
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
        this.dispose();
+       clientApp.getFrontend().channelEnd();
        System.exit(0);   
        //adicionar o channel close
     }//GEN-LAST:event_formWindowClosing

@@ -4,6 +4,9 @@
  */
 package sirs.remotedocs;
 
+import sirs.remotedocs.grpc.Contract.*;
+import io.grpc.StatusRuntimeException;
+
 /**
  *
  * @author tomaz
@@ -205,6 +208,31 @@ public class LoginRegisterForm extends javax.swing.JFrame {
     }//GEN-LAST:event_password_tfActionPerformed
 
     private void LoginRegister_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_LoginRegister_btnMouseClicked
+        String password = new String(password_tf.getPassword());
+        String username = username_tf.getText();
+        if(LoginRegister_btn.getText() == "LOGIN"){
+            LoginRequest loginRequest = LoginRequest.newBuilder().setUsername(username).setPassword(password).build();
+		    try {
+			    LoginResponse loginResponse = frontend.login(loginRequest);
+		    }
+		    catch (StatusRuntimeException e) {
+			    System.out.println("Caught exception with description: " +
+			    e.getStatus().getDescription());
+                
+                //show message dialog;
+		    }
+        }
+        else{
+            RegisterRequest registerRequest = RegisterRequest.newBuilder().setUsername(username).setPassword(password).build();
+		    try {
+			    RegisterResponse registerResponse = frontend.register(registerRequest);
+		    }
+		    catch (StatusRuntimeException e) {
+			    System.out.println("Caught exception with description: " +
+			    e.getStatus().getDescription());
+                //show message dialog
+		    }
+        }     
         clientApp.switchForm(this, clientApp.getDoclist());
     }//GEN-LAST:event_LoginRegister_btnMouseClicked
 
