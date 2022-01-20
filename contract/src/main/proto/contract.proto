@@ -5,7 +5,7 @@ syntax = "proto3";
 package sirs.remotedocs.grpc;
 
 message LoginRequest {
-	string name = 1;
+	string username = 1;
 	string password = 2;
 }
 
@@ -47,7 +47,7 @@ message CreateFileResponse {
 }
 
 message RegisterRequest {
-	string name = 1;
+	string username = 1;
 	string password = 2;
 }
 

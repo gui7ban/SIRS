@@ -1,5 +1,6 @@
 package sirs.remotedocs;
 
+import io.grpc.StatusRuntimeException;
 import sirs.remotedocs.grpc.Contract.*;
 
 public class ClientApp {
@@ -23,7 +24,22 @@ public class ClientApp {
 		PingResponse pingResponse = frontend.ping(pingRequest);
 		System.out.println(pingResponse.getOutputText());
 
-
+		RegisterRequest registerRequest = RegisterRequest.newBuilder().setUsername("Gui").setPassword("123456789").build();
+		try {
+			RegisterResponse registerResponse = frontend.register(registerRequest);
+		}
+		catch (StatusRuntimeException e) {
+			System.out.println("Caught exception with description: " +
+			e.getStatus().getDescription());
+		}
+		LoginRequest loginRequest = LoginRequest.newBuilder().setUsername("Gui").setPassword("123456789").build();
+		try {
+			LoginResponse loginResponse = frontend.login(loginRequest);
+		}
+		catch (StatusRuntimeException e) {
+			System.out.println("Caught exception with description: " +
+			e.getStatus().getDescription());
+		}
 		frontend.channelEnd();
     }
 }

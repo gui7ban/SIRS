@@ -2,8 +2,6 @@ package sirs.remotedocs;
 
 import org.apache.ibatis.jdbc.ScriptRunner;
 import sirs.remotedocs.domain.User;
-import sirs.remotedocs.domain.exception.ErrorMessage;
-import sirs.remotedocs.domain.exception.RemoteDocsException;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;

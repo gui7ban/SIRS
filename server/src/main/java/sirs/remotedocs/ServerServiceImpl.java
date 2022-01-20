@@ -24,7 +24,7 @@ public class ServerServiceImpl extends RemoteDocsGrpc.RemoteDocsImplBase
 	@Override
 	public void login(LoginRequest request, StreamObserver<LoginResponse> responseObserver) {
 		try {
-			server.login(request.getName(), request.getPassword());
+			server.login(request.getUsername(), request.getPassword());
 			responseObserver.onNext(LoginResponse.newBuilder().build());
 			responseObserver.onCompleted();
 		}
@@ -36,7 +36,7 @@ public class ServerServiceImpl extends RemoteDocsGrpc.RemoteDocsImplBase
 	@Override
 	public void register(RegisterRequest request, StreamObserver<RegisterResponse> responseObserver) {
 		try {
-			server.register(request.getName(), request.getPassword());
+			server.register(request.getUsername(), request.getPassword());
 			responseObserver.onNext(RegisterResponse.newBuilder().build());
 			responseObserver.onCompleted();
 		}
