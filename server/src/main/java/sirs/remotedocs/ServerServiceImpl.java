@@ -26,8 +26,9 @@ public class ServerServiceImpl extends RemoteDocsGrpc.RemoteDocsImplBase
 	@Override
 	public void login(LoginRequest request, StreamObserver<LoginResponse> responseObserver) {
 		try {
-			server.login(request.getUsername(), request.getPassword());
-			responseObserver.onNext(LoginResponse.newBuilder().build());
+			// TODO: Return files list, one for own files and another one for shared files.
+			String accessToken = server.login(request.getUsername(), request.getPassword());
+			responseObserver.onNext(LoginResponse.newBuilder().setToken(accessToken).build());
 			responseObserver.onCompleted();
 		}
 		catch (RemoteDocsException e) {
@@ -35,6 +36,8 @@ public class ServerServiceImpl extends RemoteDocsGrpc.RemoteDocsImplBase
 		}
 		
 	}
+
+	// TODO: Implement logout in GRPC.
 
 	@Override
 	public void register(RegisterRequest request, StreamObserver<RegisterResponse> responseObserver) {

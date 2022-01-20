@@ -19,7 +19,7 @@ public class Server {
 	private Logger logger = new Logger("Server", "Core");
 	private Map<String, String> accessTokens = new TreeMap<>();
 
-	public void login(String name, String password) throws RemoteDocsException {
+	public String login(String name, String password) throws RemoteDocsException {
 		try {
 			User user = this.serverRepo.getUser(name);
 			if (user == null)
@@ -33,6 +33,7 @@ public class Server {
 
 			// Add the token to the access tokens map:
 			this.accessTokens.put(name, accessToken);
+			return accessToken;
 		} catch (NoSuchAlgorithmException | SQLException e) {
 			this.logger.log(e.getMessage());
 			throw new RemoteDocsException(ErrorMessage.INTERNAL_ERROR);
@@ -167,6 +168,7 @@ public class Server {
 		}
 	}
 
+	// TODO: Share file permissions.
 
 	public synchronized String ping() {
 		return "I'm alive!";
