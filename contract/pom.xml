@@ -62,7 +62,8 @@
 				<configuration>
 					<source>${version.java}</source>
 					<target>${version.java}</target>
-				</configuration>
+                                        
+				</configuration>                            
 			</plugin>
 			<plugin>
 				<groupId>org.xolstice.maven.plugins</groupId>

@@ -32,6 +32,15 @@ public class ServerFrontend {
         return stub.ping(request);
     }
 
+    /*
+    public LoginResponse login(LoginRequest request) {
+        return stub.login(request);
+    }
+
+    public RegisterResponse register(RegisterRequest request) {
+        return stub.register(request);
+    }*/
+
     public void channelEnd() {
         channel.shutdownNow();
     }
