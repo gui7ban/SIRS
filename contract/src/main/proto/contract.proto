@@ -21,6 +21,8 @@ message DocumentInfo {
 
 message DownloadRequest {
     string id = 1;
+    string username = 2;
+    string token = 3;
 }
 
 message DownloadResponse {
@@ -29,8 +31,9 @@ message DownloadResponse {
 
 message UploadRequest {
     int32 id = 1;
-    bytes content = 3;
-    string username = 4;
+    bytes content = 2;
+    string username = 3;
+    string token = 4;
 }
 
 message UploadResponse {
@@ -40,6 +43,7 @@ message UploadResponse {
 message CreateFileRequest {
     string name = 1;
     string username = 2;
+    string token = 3;
 }
 
 message CreateFileResponse {

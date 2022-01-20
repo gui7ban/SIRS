@@ -49,8 +49,6 @@ public class Server {
 				throw new RemoteDocsException(ErrorMessage.INTERNAL_ERROR);
 			}
 		}
-		
-
 	}
 
 	public synchronized String ping() {
