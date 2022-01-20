@@ -210,10 +210,10 @@ public class LoginRegisterForm extends javax.swing.JFrame {
     private void LoginRegister_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_LoginRegister_btnMouseClicked
         String password = new String(password_tf.getPassword());
         String username = username_tf.getText();
-        if(LoginRegister_btn.getText() == "LOGIN"){
+        if(LoginRegister_btn.getText().equals("LOGIN")){
             LoginRequest loginRequest = LoginRequest.newBuilder().setUsername(username).setPassword(password).build();
 		    try {
-			    LoginResponse loginResponse = frontend.login(loginRequest);
+			    LoginResponse loginResponse = clientApp.getFrontend().login(loginRequest);
 		    }
 		    catch (StatusRuntimeException e) {
 			    System.out.println("Caught exception with description: " +
@@ -225,7 +225,7 @@ public class LoginRegisterForm extends javax.swing.JFrame {
         else{
             RegisterRequest registerRequest = RegisterRequest.newBuilder().setUsername(username).setPassword(password).build();
 		    try {
-			    RegisterResponse registerResponse = frontend.register(registerRequest);
+			    RegisterResponse registerResponse = clientApp.getFrontend().register(registerRequest);
 		    }
 		    catch (StatusRuntimeException e) {
 			    System.out.println("Caught exception with description: " +

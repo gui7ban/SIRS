@@ -10,6 +10,7 @@ public class ServerApp {
 
 	private static String CERTIFICATE_CHAIN_FILE = "resources/cert.pem";
 	private static String CERTIFICATE_PRIVATE_KEY_FILE = "resources/unencrypted_key.pem";
+	// TODO: Move private key to keystore, eventually.
 
 	public static void main(String[] args) {
 		Logger logger = new Logger("Server", "Main");
