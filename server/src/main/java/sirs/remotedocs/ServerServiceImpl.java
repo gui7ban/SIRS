@@ -33,6 +33,7 @@ public class ServerServiceImpl extends RemoteDocsGrpc.RemoteDocsImplBase
 		}
 		
 	}
+
 	@Override
 	public void register(RegisterRequest request, StreamObserver<RegisterResponse> responseObserver) {
 		try {
@@ -41,6 +42,17 @@ public class ServerServiceImpl extends RemoteDocsGrpc.RemoteDocsImplBase
 			responseObserver.onCompleted();
 		}
 		catch (RemoteDocsException e) {
+			responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
+		}
+	}
+
+	@Override
+	public void createFile(CreateFileRequest request, StreamObserver<CreateFileResponse> responseObserver) {
+		try {
+			String fileId = server.createFile(request.getName(), request.getUsername(), request.getToken());
+			responseObserver.onNext(CreateFileResponse.newBuilder().setId(fileId).build());
+			responseObserver.onCompleted();
+		} catch (RemoteDocsException e) {
 			responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
 		}
 	}

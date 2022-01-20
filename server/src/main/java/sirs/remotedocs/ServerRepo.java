@@ -97,4 +97,19 @@ public class ServerRepo {
             this.logger.log(e.getMessage());
         }
     }
+
+    public void createFile(String id, String name) {
+        String query = "INSERT INTO remotedocs_files (id, name, digest) VALUES (?, ?, ?)";
+
+        try {
+            Connection connection = this.newConnection();
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setString(1, id);
+            statement.setString(2, name);
+            statement.setString(3, "");
+            statement.execute();
+        } catch (SQLException e) {
+            this.logger.log(e.getMessage());
+        }
+    }
 }

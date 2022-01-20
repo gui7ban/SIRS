@@ -73,4 +73,5 @@ service RemoteDocs {
 	rpc Register(RegisterRequest) returns (RegisterResponse);
 	rpc Download(DownloadRequest) returns (DownloadResponse);
 	rpc Upload(UploadRequest) returns (UploadResponse);
+	rpc CreateFile(CreateFileRequest) returns (CreateFileResponse);
 }
