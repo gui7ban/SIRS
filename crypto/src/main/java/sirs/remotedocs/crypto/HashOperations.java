@@ -19,7 +19,7 @@ public class HashOperations {
     }
 
     public static boolean verifyDigest(String message, String digest, byte[] salt) throws NoSuchAlgorithmException {
-           return digest.equals(digest(message,salt));
+           return digest.equals(digest(message, salt));
     }
 
     public static byte[] generateSalt(){
