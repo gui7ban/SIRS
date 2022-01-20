@@ -35,9 +35,7 @@ public class ServerFrontend {
         return stub.register(request);
     }
 
-    public LoginResponse login(LoginRequest request) {
-        return stub.login(request);
-    }
+    public LoginResponse login(LoginRequest request) { return stub.login(request); }
 
     public void channelEnd() {
         channel.shutdownNow();

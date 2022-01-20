@@ -5,3 +5,4 @@ contract/target/
 crypto/target/
 *.class
 *.iml
+/client/src/main/java/sirs/remotedocs/GUI/target/
