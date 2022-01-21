@@ -6,6 +6,10 @@ package sirs.remotedocs;
 
 import sirs.remotedocs.grpc.Contract.*;
 import io.grpc.StatusRuntimeException;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.swing.JOptionPane;
 
 /**
@@ -222,7 +226,15 @@ public class LoginRegisterForm extends javax.swing.JFrame {
 			    LoginResponse loginResponse = clientApp.getFrontend().login(loginRequest);
                 password_tf.setText("");
                 username_tf.setText("Username");
-                //clientApp.setFiles(loginResponse.getDocumentsList());
+                
+                List<DocumentInfo> listGrpc = loginResponse.getDocumentsList();
+                List<FileDetails> listDocs = new ArrayList<>(); 
+                
+                for (DocumentInfo docGrpc: listGrpc){
+                    listDocs.add(new FileDetails(docGrpc.getId(), docGrpc.getName(), docGrpc.getRelationship()));
+                }
+
+                clientApp.setFiles(listDocs);
                 clientApp.setUsername(username);
                 clientApp.setToken(loginResponse.getToken());
                 clientApp.switchForm(this, clientApp.getDoclist());

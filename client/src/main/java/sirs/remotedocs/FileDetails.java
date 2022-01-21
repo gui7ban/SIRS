@@ -14,15 +14,11 @@ public class FileDetails {
     private String owner;
    
     private byte[] content;
-
-    public FileDetails(int id, String name, int permission, String owner, LocalDateTime time_change,
-            String last_updater) {
+    // Response to login 
+    public FileDetails(int id, String name, int permission) {
         this.id = id;
         this.name = name;
         this.permission = permission;
-        this.owner = owner;
-        this.time_change = time_change;
-        this.last_updater = last_updater;
     }
 
 
@@ -30,7 +26,7 @@ public class FileDetails {
         this.sharedKey = sharedKey;
         this.permission = permission;
     }
-
+    //Response to create file
     public FileDetails(int id, LocalDateTime time_change){
         this.id = id;
         this.time_change = time_change;
