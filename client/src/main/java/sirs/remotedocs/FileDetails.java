@@ -21,7 +21,15 @@ public class FileDetails {
         this.permission = permission;
     }
 
-
+    public FileDetails(int id, String name, int permission, LocalDateTime time_change, String last_updater, String owner) {
+        this.id = id;
+        this.name = name;
+        this.permission = permission;
+        this.time_change = time_change;
+        this.last_updater = last_updater;
+        this.owner = owner;
+    }
+    
     public FileDetails(String sharedKey, int permission) {
         this.sharedKey = sharedKey;
         this.permission = permission;

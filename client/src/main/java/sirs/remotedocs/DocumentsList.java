@@ -4,7 +4,15 @@
  */
 package sirs.remotedocs;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+
 import javax.swing.JOptionPane;
+
+import io.grpc.StatusRuntimeException;
+import sirs.remotedocs.grpc.Contract.CreateFileRequest;
+import sirs.remotedocs.grpc.Contract.CreateFileResponse;
 
 /**
  *
@@ -19,9 +27,16 @@ public class DocumentsList extends javax.swing.JFrame {
     public DocumentsList(ClientApp clientApp) {
         initComponents();
         this.clientApp = clientApp;
-    
+        //TODO: Lembrar de dar disable dos botões quando não tiver permissão
     }
 
+    public void setMyDocumentsList(String[] myDocs){
+        myDocumentsList.setListData(myDocs);
+    }
+    
+    public void setSharedList(String[] sharedList){
+        sharedWithMeList.setListData(sharedList);
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -179,18 +194,24 @@ public class DocumentsList extends javax.swing.JFrame {
     }//GEN-LAST:event_delete_btnMouseClicked
 
     private void new_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_new_btnMouseClicked
-        /*String filename = JOptionPane.showInputDialog(this, "Insert filename: ");
-        CreateFileRequest createFileRequest = createFileRequest.newBuilder().setname(filename).setUsername(clientApp.getUsername()).setToken(clientApp.getToken()).build();
+        //TODO: verificar a opção do dialog
+        String filename = JOptionPane.showInputDialog(this, "Insert filename: ");
+        CreateFileRequest createFileRequest = CreateFileRequest.newBuilder().setName(filename).setUsername(clientApp.getUsername()).setToken(clientApp.getToken()).build();
         try {
             CreateFileResponse createFileResponse = clientApp.getFrontend().createFile(createFileRequest);
-            clientApp.getEditdoc().setFileId(createFileResponse.getId());
+            int id = createFileResponse.getId();
+            clientApp.getEditdoc().setFileId(id);
+            LocalDateTime timestamp = Instant.ofEpochSecond(createFileResponse.getCreationTime().getSeconds()).atZone(ZoneId.systemDefault()).toLocalDateTime();
+            String username = clientApp.getUsername();
+            clientApp.addFile(new FileDetails(id,filename,0,timestamp,username,username));
+            setMyDocumentsList(clientApp.getMyDocs());
             clientApp.switchForm(this, clientApp.getEditdoc());
         }
         catch (StatusRuntimeException e) {
             System.out.println("Caught exception with description: " +
             e.getStatus().getDescription());
             JOptionPane.showMessageDialog(null, e.getStatus().getDescription());
-        }*/
+        }
     }//GEN-LAST:event_new_btnMouseClicked
 
     private void open_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_open_btnMouseClicked

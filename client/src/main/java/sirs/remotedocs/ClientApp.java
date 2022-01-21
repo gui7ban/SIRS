@@ -18,7 +18,7 @@ public class ClientApp {
     private EditDocumentForm editdoc;
     private String token;
     private String username;
-    private List<FileDetails> files;
+    private List<FileDetails> files = new ArrayList<>();
  
     
     public ClientApp(String host, int port){
@@ -32,24 +32,24 @@ public class ClientApp {
     }
 
 
-    public List<FileDetails> getSharedWithMe(){
-        ArrayList<FileDetails> result = new ArrayList<>();
-        for(FileDetails file: files){
-            if(file.getOwner() == username){
-                result.add(file);
+    public String[] getSharedWithMe(){
+        ArrayList<String> result = new ArrayList<>();
+        for(FileDetails file: this.files){
+            if(file.getPermission() != 0){
+                result.add(file.getName());
             }
         }
-        return result;
+        return result.stream().toArray(String[]::new);
     }
 
-    public List<FileDetails> getMyDocs(){
-        ArrayList<FileDetails> result = new ArrayList<>();
-        for(FileDetails file: files){
-            if(file.getOwner() != username){
-                result.add(file);
+    public String[] getMyDocs(){
+        ArrayList<String> result = new ArrayList<>();
+        for(FileDetails file: this.files){
+            if(file.getPermission() == 0){
+                result.add(file.getName());
             }
         }
-        return result;
+        return result.stream().toArray(String[]::new);
 
     }
 
@@ -64,6 +64,10 @@ public class ClientApp {
 
     public void setFiles(List<FileDetails> files) {
         this.files = files;
+    }  
+
+    public void addFile(FileDetails file){
+        this.files.add(file);
     }
     
     /*--------------------GETTERS--------------------*/

@@ -6,7 +6,6 @@ package sirs.remotedocs;
 
 import sirs.remotedocs.grpc.Contract.*;
 import io.grpc.StatusRuntimeException;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -237,7 +236,10 @@ public class LoginRegisterForm extends javax.swing.JFrame {
                 clientApp.setFiles(listDocs);
                 clientApp.setUsername(username);
                 clientApp.setToken(loginResponse.getToken());
-                clientApp.switchForm(this, clientApp.getDoclist());
+                DocumentsList docForm = clientApp.getDoclist();
+                docForm.setMyDocumentsList(clientApp.getMyDocs());
+                docForm.setSharedList(clientApp.getSharedWithMe());
+                clientApp.switchForm(this, docForm);
                 
             }
 		    catch (StatusRuntimeException e) {
@@ -252,7 +254,6 @@ public class LoginRegisterForm extends javax.swing.JFrame {
 			    RegisterResponse registerResponse = clientApp.getFrontend().register(registerRequest);
                 password_tf.setText("");
                 username_tf.setText("Username");
-                //clientApp.setFiles(registerResponse.getDocuments());
                 clientApp.setUsername(username);
                 clientApp.setToken(registerResponse.getToken());
                 clientApp.switchForm(this, clientApp.getDoclist());
