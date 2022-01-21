@@ -186,27 +186,18 @@ public class ServerRepo {
         return null;
     }
     public List<FileDetails> getListDocuments(String username) throws SQLException {
-        String query = "SELECT fileId,last_updater,name,time_change,permission FROM remotedocs_permissions,remotedocs_files WHERE fileId = id and username=?";
-        String query2 = "SELECT userId FROM remotedocs_permission where fileId=? and permission = 0";
+        String query = "SELECT fileId,name,permission FROM remotedocs_permissions,remotedocs_files WHERE fileId = id and username=?";
         ArrayList<FileDetails> listOfDocuments = new ArrayList<>();
         Connection connection = this.newConnection();
         PreparedStatement statement = connection.prepareStatement(query);
-        PreparedStatement getOwner = connection.prepareStatement(query2);
         statement.setString(1, username);
 
         ResultSet resultSet = statement.executeQuery();
         while(resultSet.next()){
             int fileId = resultSet.getInt("fileId");
             String name = resultSet.getString("name");
-            int permission = resultSet.getInt("permission");
-            getOwner.setInt(1, fileId);
-            ResultSet ownerSet = getOwner.executeQuery();
-            ownerSet.next();
-            String owner = ownerSet.getString("userId");
-            LocalDateTime time_change = resultSet.getTimestamp("time_change").toLocalDateTime();
-            String last_updater = resultSet.getString("last_updater");
-         
-            listOfDocuments.add(new FileDetails(fileId, name, permission, owner, time_change, last_updater));
+            int permission = resultSet.getInt("permission");         
+            listOfDocuments.add(new FileDetails(fileId, name, permission));
         }
 
         return listOfDocuments;
