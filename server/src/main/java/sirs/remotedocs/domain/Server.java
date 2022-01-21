@@ -42,7 +42,7 @@ public class Server {
 		}
 	}
 
-	public List<FileDetails> getListDocuments(String username) throws RemoteDocsException{
+	public List<FileDetails> getListDocuments(String username) throws RemoteDocsException {
 		try {
 			return this.serverRepo.getListDocuments(username);
 		} catch (SQLException e) {

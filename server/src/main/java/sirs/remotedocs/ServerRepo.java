@@ -190,14 +190,14 @@ public class ServerRepo {
             int fileId = resultSet.getInt("fileId");
             String name = resultSet.getString("name");
             int permission = resultSet.getInt("permission");
-            getOwner.setInt(1,fileId);
+            getOwner.setInt(1, fileId);
             ResultSet ownerSet = getOwner.executeQuery();
             ownerSet.next();
             String owner = ownerSet.getString("userId");
             LocalDateTime time_change = resultSet.getTimestamp("time_change").toLocalDateTime();
             String last_updater = resultSet.getString("last_updater");
          
-            listOfDocuments.add(new FileDetails(fileId,name,permission,owner,time_change,last_updater));
+            listOfDocuments.add(new FileDetails(fileId, name, permission, owner, time_change, last_updater));
         }
 
         return listOfDocuments;

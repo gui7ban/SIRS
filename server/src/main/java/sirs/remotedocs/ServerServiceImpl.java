@@ -1,5 +1,6 @@
 package sirs.remotedocs;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.Timestamp;
 import com.google.protobuf.compiler.PluginProtos.CodeGeneratorResponse.File;
 
 import io.grpc.stub.StreamObserver;
@@ -12,6 +13,7 @@ import sirs.remotedocs.grpc.RemoteDocsGrpc;
 
 import static io.grpc.Status.INVALID_ARGUMENT;
 
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,11 +36,29 @@ public class ServerServiceImpl extends RemoteDocsGrpc.RemoteDocsImplBase
 			String username = request.getUsername();
 			String accessToken = server.login(username, request.getPassword());
 			List<FileDetails> listOfDocuments = server.getListDocuments(username);
-			
-			for(FileDetails document: listOfDocuments){
-				DocumentInfo docGrpc = DocumentInfo.newBuilder().setId(document.getId()).build();
+			LoginResponse.Builder builder = LoginResponse.newBuilder().setToken(accessToken);
+
+			for(FileDetails document: listOfDocuments) {
+				Timestamp ts = Timestamp.newBuilder().setSeconds(document
+						.getTimeChange()
+						.atZone(ZoneId.systemDefault())
+						.toEpochSecond()
+				).build();
+
+				DocumentInfo docGrpc = DocumentInfo
+						.newBuilder()
+						.setId(document.getId())
+						.setName(document.getName())
+						.setLastChange(ts)
+						.setLastUpdater(document.getLastUpdater())
+						.setOwner(document.getOwner())
+						.setRelationship(document.getPermission())
+						.build();
+
+				builder.addDocuments(docGrpc);
 			}
-			responseObserver.onNext(LoginResponse.newBuilder().setToken(accessToken).build());
+
+			responseObserver.onNext(builder.build());
 			responseObserver.onCompleted();
 		}
 		catch (RemoteDocsException e) {
