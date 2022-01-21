@@ -1,2 +1,4 @@
-package sirs.remotedocs;public class BackupServer {
+package sirs.remotedocs;
+
+public class BackupServer {
 }
