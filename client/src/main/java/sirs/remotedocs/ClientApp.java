@@ -2,9 +2,12 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
+
 package sirs.remotedocs;
 
 import javax.swing.*;
+import java.util.List;
+import java.util.ArrayList;
 
 public class ClientApp {
     private ServerFrontend frontend;
@@ -15,6 +18,7 @@ public class ClientApp {
     private EditDocumentForm editdoc;
     private String token;
     private String username;
+    private List<FileDetails> files;
  
     
     public ClientApp(String host, int port){
@@ -27,6 +31,29 @@ public class ClientApp {
         menu.setVisible(true);
     }
 
+
+    public List<FileDetails> getSharedWithMe(){
+        ArrayList<FileDetails> result = new ArrayList<>();
+        for(FileDetails file: files){
+            if(file.getOwner() == username){
+                result.add(file);
+            }
+        }
+        return result;
+    }
+
+    public List<FileDetails> getMyDocs(){
+        ArrayList<FileDetails> result = new ArrayList<>();
+        for(FileDetails file: files){
+            if(file.getOwner() != username){
+                result.add(file);
+            }
+        }
+        return result;
+
+    }
+
+
     public void setUsername(String username){
         this.username = username;
     }
@@ -34,10 +61,18 @@ public class ClientApp {
     public void setToken(String token){
         this.token = token;
     }
+
+    public void setFiles(List<FileDetails> files) {
+        this.files = files;
+    }
     
     /*--------------------GETTERS--------------------*/
     public String getUsername(){
         return username;
+    }
+
+    public List<FileDetails> getFiles(){
+        return files;
     }
     
     public String getToken(){

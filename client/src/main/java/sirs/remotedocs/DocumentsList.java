@@ -16,9 +16,9 @@ public class DocumentsList extends javax.swing.JFrame {
     /**
      * Creates new form Dashboard
      */
-    public DocumentsList(ClientApp formSelector) {
+    public DocumentsList(ClientApp clientApp) {
         initComponents();
-        this.clientApp = formSelector;
+        this.clientApp = clientApp;
     
     }
 
@@ -172,11 +172,11 @@ public class DocumentsList extends javax.swing.JFrame {
     }//GEN-LAST:event_delete_btnMouseClicked
 
     private void new_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_new_btnMouseClicked
-        String filename = JOptionPane.showInputDialog(this, "Insert filename: ");
-        /*CreateFileRequest createFileRequest = createFileRequest.newBuilder().setname(filename).setUsername(clientApp.getUsername()).setToken(clientApp.getToken()).build();
+        /*String filename = JOptionPane.showInputDialog(this, "Insert filename: ");
+        CreateFileRequest createFileRequest = createFileRequest.newBuilder().setname(filename).setUsername(clientApp.getUsername()).setToken(clientApp.getToken()).build();
         try {
             CreateFileResponse createFileResponse = clientApp.getFrontend().createFile(createFileRequest);
-            clientApp.getEditdoc().setFileId(createFileResponse.getId()); //nao sei se vai chamar id
+            clientApp.getEditdoc().setFileId(createFileResponse.getId());
             clientApp.switchForm(this, clientApp.getEditdoc());
         }
         catch (StatusRuntimeException e) {
