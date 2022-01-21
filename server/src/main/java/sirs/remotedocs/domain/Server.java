@@ -93,7 +93,7 @@ public class Server {
 		try {
 			int nextId = this.serverRepo.getMaxFileId() + 1;
 			File newFile = new File(String.valueOf(nextId));
-
+				// TODO: mudar o id para nome user + nome ficheiro (UPDATE CASCADE)
 			boolean fileExists = this.serverRepo.fileExists(username, name);
 			if(fileExists || !newFile.createNewFile())
 				throw new RemoteDocsException(ErrorMessage.FILE_ALREADY_EXISTS);

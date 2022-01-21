@@ -22,7 +22,7 @@ CREATE TABLE remotedocs_permissions
     permission INTEGER NOT NULL,
     sharedKey  VARCHAR(500) NOT NULL,
     FOREIGN KEY (userId)
-        REFERENCES remotedocs_users(username) ON DELETE CASCADE,
+        REFERENCES remotedocs_users(username) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (fileId)
-        REFERENCES remotedocs_files(id) ON DELETE CASCADE
+        REFERENCES remotedocs_files(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
