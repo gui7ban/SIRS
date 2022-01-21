@@ -2,7 +2,7 @@ package sirs.remotedocs;
 
 public class BackUpServerApp {
     
-    public static void main(String[] args){
+    public static void main(String[] args) {
         System.out.println(BackUpServerApp.class.getSimpleName());
         System.out.printf("Received %d arguments%n", args.length);
 		for (int i = 0; i < args.length; i++) {

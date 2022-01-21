@@ -8,14 +8,11 @@ import java.util.Base64;
 import java.security.SecureRandom;
 
 
-public class fileCryptoOperations {
-
-
+public class FileCryptoOperations {
     public static SecretKey generateKey() throws NoSuchAlgorithmException {
         KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
         keyGenerator.init(256);
-        SecretKey key = keyGenerator.generateKey();
-        return key;
+        return keyGenerator.generateKey();
     }
 
     public static IvParameterSpec generateIv(){
@@ -30,9 +27,8 @@ public class fileCryptoOperations {
  
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         cipher.init(Cipher.ENCRYPT_MODE, key, iv);
-        byte[] cipherText = cipher.doFinal(input.getBytes());
 
-        return cipherText;
+        return cipher.doFinal(input.getBytes());
     }
 
     public static String decryptFile(byte[] cipherText, SecretKey key, IvParameterSpec iv) 
