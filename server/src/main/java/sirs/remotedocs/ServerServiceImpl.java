@@ -36,19 +36,10 @@ public class ServerServiceImpl extends RemoteDocsGrpc.RemoteDocsImplBase
 			LoginResponse.Builder builder = LoginResponse.newBuilder().setToken(accessToken);
 
 			for(FileDetails document: listOfDocuments) {
-				Timestamp ts = Timestamp.newBuilder().setSeconds(document
-						.getTimeChange()
-						.atZone(ZoneId.systemDefault())
-						.toEpochSecond()
-				).build();
-
 				DocumentInfo docGrpc = DocumentInfo
 						.newBuilder()
 						.setId(document.getId())
 						.setName(document.getName())
-						.setLastChange(ts)
-						.setLastUpdater(document.getLastUpdater())
-						.setOwner(document.getOwner())
 						.setRelationship(document.getPermission())
 						.build();
 
