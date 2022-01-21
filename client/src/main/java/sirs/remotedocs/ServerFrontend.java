@@ -27,17 +27,20 @@ public class ServerFrontend {
         stub = RemoteDocsGrpc.newBlockingStub(channel);
     }
 
-    public PingResponse ping(PingRequest request) {
-        return stub.ping(request);
-    }
+    public PingResponse ping(PingRequest request) { return stub.ping(request); }
 
-    public RegisterResponse register(RegisterRequest request) {
-        return stub.register(request);
-    }
+    public RegisterResponse register(RegisterRequest request) { return stub.register(request); }
 
     public LoginResponse login(LoginRequest request) { return stub.login(request); }
 
+    public UpdateFileNameResponse updateFileName(UpdateFileNameRequest request) { return stub.updateFileName(request); }
+
     public CreateFileResponse createFile(CreateFileRequest request) { return stub.createFile(request); }
+
+    public UploadResponse upload(UploadRequest request) { return stub.upload(request); }
+
+    public DownloadResponse download(DownloadRequest request) { return stub.download(request);}
+
 
     public void channelEnd() {
         channel.shutdownNow();

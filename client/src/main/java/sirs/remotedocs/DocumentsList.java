@@ -173,17 +173,17 @@ public class DocumentsList extends javax.swing.JFrame {
 
     private void new_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_new_btnMouseClicked
         String filename = JOptionPane.showInputDialog(this, "Insert filename: ");
-        CreateFileRequest createFileRequest = createFileRequest.newBuilder().setname(filename).setUsername(clientApp.getUsername()).setToken(clientApp.getToken()).build();
+        /*CreateFileRequest createFileRequest = createFileRequest.newBuilder().setname(filename).setUsername(clientApp.getUsername()).setToken(clientApp.getToken()).build();
         try {
             CreateFileResponse createFileResponse = clientApp.getFrontend().createFile(createFileRequest);
-            clientApp.getEditdoc().setFileId(createFileResponse.getId());
+            clientApp.getEditdoc().setFileId(createFileResponse.getId()); //nao sei se vai chamar id
             clientApp.switchForm(this, clientApp.getEditdoc());
         }
         catch (StatusRuntimeException e) {
             System.out.println("Caught exception with description: " +
             e.getStatus().getDescription());
             JOptionPane.showMessageDialog(null, e.getStatus().getDescription());
-        }
+        }*/
     }//GEN-LAST:event_new_btnMouseClicked
 
     private void open_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_open_btnMouseClicked
