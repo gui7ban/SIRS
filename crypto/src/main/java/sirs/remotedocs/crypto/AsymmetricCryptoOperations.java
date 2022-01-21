@@ -59,11 +59,11 @@ public class AsymmetricCryptoOperations {
         return signature.sign();
     }
 
-    public static boolean verify(byte[] content, PublicKey publicKey, byte[] signature)
+    public static boolean verifySignature(byte[] content, PublicKey publicKey, byte[] signature)
             throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-        Signature sig = Signature.getInstance(SIGN_ALGORITHM);
-        sig.initVerify(publicKey);
-        sig.update(content);
-        return sig.verify(signature);
+        Signature signAlgorithm = Signature.getInstance(SIGN_ALGORITHM);
+        signAlgorithm.initVerify(publicKey);
+        signAlgorithm.update(content);
+        return signAlgorithm.verify(signature);
     }
 }
