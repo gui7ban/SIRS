@@ -13,8 +13,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.protobuf.compiler.PluginProtos.CodeGeneratorResponse.File;
-
 public class ServerRepo {
 
     private final Logger logger;
@@ -156,13 +154,14 @@ public class ServerRepo {
         statement.executeQuery();
     }
 
-    public void updateFileName(int id, String newName) throws SQLException {
-        String query = "UPDATE remotedocs_files SET name=? WHERE id=?";
+    public void updateFileName(int id, String newName, String username) throws SQLException {
+        String query = "UPDATE remotedocs_files SET name=?, last_updater=?, time_change=now() WHERE id=?";
 
         Connection connection = this.newConnection();
         PreparedStatement statement = connection.prepareStatement(query);
         statement.setString(1, newName);
-        statement.setInt(2, id);
+        statement.setString(2, username);
+        statement.setInt(3, id);
         statement.executeQuery();
     }
 

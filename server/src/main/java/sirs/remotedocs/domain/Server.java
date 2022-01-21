@@ -152,7 +152,7 @@ public class Server {
 			FileDetails fileDetails = this.serverRepo.getFileDetails(id, username);
 			if (fileDetails == null)
 				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_ACCESS);
-
+			// TODO: check digest
 			File file = new File(String.valueOf(id));
 			if (!file.exists())
 				throw new RemoteDocsException(ErrorMessage.FILE_DOESNT_EXIST);
@@ -179,7 +179,7 @@ public class Server {
 			else if (fileDetails.getPermission() != 0)
 				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_FILENAME_CHANGE);
 
-			this.serverRepo.updateFileName(id, newName);
+			this.serverRepo.updateFileName(id, newName, username);
 		} catch (SQLException e) {
 			this.logger.log(e.getMessage());
 			throw new RemoteDocsException(ErrorMessage.INTERNAL_ERROR);
