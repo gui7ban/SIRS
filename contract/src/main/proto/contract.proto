@@ -64,6 +64,7 @@ message CreateFileRequest {
 
 message CreateFileResponse {
     int32 id = 1;
+    google.protobuf.Timestamp creation_time = 2;
 }
 
 message RegisterRequest {

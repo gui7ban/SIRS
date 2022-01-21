@@ -31,6 +31,11 @@ public class FileDetails {
         this.permission = permission;
     }
 
+    public FileDetails(int id, LocalDateTime time_change){
+        this.id = id;
+        this.time_change = time_change;
+    }
+
     public int getId() {
         return id;
     }

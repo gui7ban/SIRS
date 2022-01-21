@@ -1,8 +1,6 @@
 package sirs.remotedocs;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Timestamp;
-import com.google.protobuf.compiler.PluginProtos.CodeGeneratorResponse.File;
-
 import io.grpc.stub.StreamObserver;
 
 import sirs.remotedocs.domain.FileDetails;
@@ -14,7 +12,6 @@ import sirs.remotedocs.grpc.RemoteDocsGrpc;
 import static io.grpc.Status.INVALID_ARGUMENT;
 
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.List;
 
 public class ServerServiceImpl extends RemoteDocsGrpc.RemoteDocsImplBase
@@ -84,8 +81,13 @@ public class ServerServiceImpl extends RemoteDocsGrpc.RemoteDocsImplBase
 	@Override
 	public void createFile(CreateFileRequest request, StreamObserver<CreateFileResponse> responseObserver) {
 		try {
-			int fileId = server.createFile(request.getName(), request.getUsername(), request.getToken());
-			responseObserver.onNext(CreateFileResponse.newBuilder().setId(fileId).build());
+			FileDetails fileDetails = server.createFile(request.getName(), request.getUsername(), request.getToken());
+			Timestamp ts = Timestamp.newBuilder().setSeconds(fileDetails
+						.getTimeChange()
+						.atZone(ZoneId.systemDefault())
+						.toEpochSecond()
+				).build();
+			responseObserver.onNext(CreateFileResponse.newBuilder().setId(fileDetails.getId()).setCreationTime(ts).build());
 			responseObserver.onCompleted();
 		} catch (RemoteDocsException e) {
 			responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());

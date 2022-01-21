@@ -97,7 +97,7 @@ public class Server {
 		}
 	}
 
-	public int createFile(String name, String username, String token) throws RemoteDocsException {
+	public FileDetails createFile(String name, String username, String token) throws RemoteDocsException {
 		if (!this.isSessionValid(username, token))
 			throw new RemoteDocsException(ErrorMessage.INVALID_SESSION);
 
@@ -109,8 +109,8 @@ public class Server {
 			if(fileExists || !newFile.createNewFile())
 				throw new RemoteDocsException(ErrorMessage.FILE_ALREADY_EXISTS);
 
-			this.serverRepo.createFile(nextId, name, username);
-			return nextId;
+			return this.serverRepo.createFile(nextId, name, username);
+			 
 		} catch (IOException | SQLException e) {
 			this.logger.log(e.getMessage());
 			throw new RemoteDocsException(ErrorMessage.INTERNAL_ERROR);

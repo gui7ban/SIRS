@@ -93,16 +93,18 @@ public class ServerRepo {
         statement.executeQuery();
     }
 
-    public void createFile(int id, String name, String username) throws SQLException {
-        String query = "INSERT INTO remotedocs_files (id, name, digest) VALUES (?, ?, ?)";
+    public FileDetails createFile(int id, String name, String username) throws SQLException {
+        String query = "INSERT INTO remotedocs_files (id, name, digest, last_updater) VALUES (?, ?, ?, ?)";
         String query2 = "INSERT INTO remotedocs_permissions (userId, fileId, permission, sharedKey) VALUES (?, ?, ?, ?)";
-
+        String query3 = "SELECT time_change from remotedocs_files where id =?";
         Connection connection = this.newConnection();
         PreparedStatement createFile = connection.prepareStatement(query);
         PreparedStatement addFilePermissions = connection.prepareStatement(query2);
+        PreparedStatement getTimeChange = connection.prepareStatement(query3);
         createFile.setInt(1, id);
         createFile.setString(2, name);
         createFile.setString(3, "");
+        createFile.setString(4, username);
         createFile.executeQuery();
 
         addFilePermissions.setString(1, username);
@@ -110,6 +112,13 @@ public class ServerRepo {
         addFilePermissions.setInt(3, Permissions.OWNER.getValue());
         addFilePermissions.setString(4, ""); // TODO: Add encrypted shared key.
         addFilePermissions.executeQuery();
+
+        getTimeChange.setInt(1,id);
+        ResultSet getTime = getTimeChange.executeQuery();
+        getTime.next();
+        LocalDateTime time_change = getTime.getTimestamp("time_change").toLocalDateTime();
+        return new FileDetails(id, time_change);
+        
     }
 
     public boolean fileExists(String username, String name) throws SQLException {
