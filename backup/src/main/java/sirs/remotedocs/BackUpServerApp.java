@@ -14,7 +14,8 @@ public class BackUpServerApp {
 		for (int i = 0; i < args.length; i++) {
 			System.out.printf("arg[%d] = %s%n", i, args[i]);
 		}
-		// check arguments
+
+		// Check arguments
 		if (args.length != 1) {
 			System.err.println("Argument(s) missing!");
 			System.err.printf("Usage: java %s <port>", BackUpServerApp.class.getSimpleName());
