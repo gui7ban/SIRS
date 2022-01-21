@@ -39,7 +39,7 @@ public class ServerFrontend {
 
     public UploadResponse upload(UploadRequest request) { return stub.upload(request); }
 
-    public DownloadResponse download(DownloadRequest request) { return stub.download(request);}
+    public DownloadResponse download(DownloadRequest request) { return stub.download(request); }
 
 
     public void channelEnd() {

@@ -4,7 +4,15 @@
  */
 package sirs.remotedocs;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+
 import javax.swing.JOptionPane;
+
+import io.grpc.StatusRuntimeException;
+import sirs.remotedocs.grpc.Contract.CreateFileRequest;
+import sirs.remotedocs.grpc.Contract.CreateFileResponse;
 
 /**
  *
@@ -16,12 +24,19 @@ public class DocumentsList extends javax.swing.JFrame {
     /**
      * Creates new form Dashboard
      */
-    public DocumentsList(ClientApp formSelector) {
+    public DocumentsList(ClientApp clientApp) {
         initComponents();
-        this.clientApp = formSelector;
-    
+        this.clientApp = clientApp;
+        //TODO: Lembrar de dar disable dos botões quando não tiver permissão
     }
 
+    public void setMyDocumentsList(String[] myDocs){
+        myDocumentsList.setListData(myDocs);
+    }
+    
+    public void setSharedList(String[] sharedList){
+        sharedWithMeList.setListData(sharedList);
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -39,15 +54,12 @@ public class DocumentsList extends javax.swing.JFrame {
         logout_btn = new javax.swing.JButton();
         rename_btn = new javax.swing.JButton();
         share_btn = new javax.swing.JButton();
-        jScrollPane1 = new javax.swing.JScrollPane();
+        sharedWithMe = new javax.swing.JScrollPane();
+        sharedWithMeList = new javax.swing.JList<>();
+        myDocuments = new javax.swing.JScrollPane();
+        myDocumentsList = new javax.swing.JList<>();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
-        setResizable(false);
-        addWindowListener(new java.awt.event.WindowAdapter() {
-            public void windowClosing(java.awt.event.WindowEvent evt) {
-                formWindowClosing(evt);
-            }
-        });
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         jPanel1.setBackground(new java.awt.Color(255, 102, 51));
 
@@ -103,7 +115,13 @@ public class DocumentsList extends javax.swing.JFrame {
             }
         });
 
-        jScrollPane1.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Documents", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION));
+        sharedWithMe.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Shared with me", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION));
+
+        sharedWithMe.setViewportView(sharedWithMeList);
+
+        myDocuments.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "My Documents", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION));
+
+        myDocuments.setViewportView(myDocumentsList);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -111,21 +129,21 @@ public class DocumentsList extends javax.swing.JFrame {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(21, Short.MAX_VALUE)
+                .addGap(21, 21, 21)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(new_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(share_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(rename_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(delete_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(open_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGap(28, 28, 28)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(255, 255, 255)
-                        .addComponent(logout_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(18, 18, 18)
-                        .addComponent(jScrollPane1)))
-                .addGap(21, 21, 21))
+                        .addComponent(myDocuments, javax.swing.GroupLayout.PREFERRED_SIZE, 232, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, 0)
+                        .addComponent(sharedWithMe, javax.swing.GroupLayout.PREFERRED_SIZE, 232, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(logout_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(28, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -136,7 +154,7 @@ public class DocumentsList extends javax.swing.JFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(new_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 25, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 28, Short.MAX_VALUE)
                         .addComponent(open_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(26, 26, 26)
                         .addComponent(rename_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -144,19 +162,23 @@ public class DocumentsList extends javax.swing.JFrame {
                         .addComponent(delete_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(28, 28, 28))
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jScrollPane1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)))
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(myDocuments)
+                            .addComponent(sharedWithMe, javax.swing.GroupLayout.DEFAULT_SIZE, 275, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(logout_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(share_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(25, 25, 25))
+                    .addComponent(share_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(logout_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(22, 22, 22))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -172,18 +194,24 @@ public class DocumentsList extends javax.swing.JFrame {
     }//GEN-LAST:event_delete_btnMouseClicked
 
     private void new_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_new_btnMouseClicked
+        //TODO: verificar a opção do dialog
         String filename = JOptionPane.showInputDialog(this, "Insert filename: ");
-        /*CreateFileRequest createFileRequest = createFileRequest.newBuilder().setname(filename).setUsername(clientApp.getUsername()).setToken(clientApp.getToken()).build();
+        CreateFileRequest createFileRequest = CreateFileRequest.newBuilder().setName(filename).setUsername(clientApp.getUsername()).setToken(clientApp.getToken()).build();
         try {
             CreateFileResponse createFileResponse = clientApp.getFrontend().createFile(createFileRequest);
-            clientApp.getEditdoc().setFileId(createFileResponse.getId()); //nao sei se vai chamar id
+            int id = createFileResponse.getId();
+            clientApp.getEditdoc().setFileId(id);
+            LocalDateTime timestamp = Instant.ofEpochSecond(createFileResponse.getCreationTime().getSeconds()).atZone(ZoneId.systemDefault()).toLocalDateTime();
+            String username = clientApp.getUsername();
+            clientApp.addFile(new FileDetails(id,filename,0,timestamp,username,username));
+            setMyDocumentsList(clientApp.getMyDocs());
             clientApp.switchForm(this, clientApp.getEditdoc());
         }
         catch (StatusRuntimeException e) {
             System.out.println("Caught exception with description: " +
             e.getStatus().getDescription());
             JOptionPane.showMessageDialog(null, e.getStatus().getDescription());
-        }*/
+        }
     }//GEN-LAST:event_new_btnMouseClicked
 
     private void open_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_open_btnMouseClicked
@@ -212,11 +240,14 @@ public class DocumentsList extends javax.swing.JFrame {
     private javax.swing.JButton delete_btn;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JButton logout_btn;
+    private javax.swing.JScrollPane myDocuments;
+    private javax.swing.JList<String> myDocumentsList;
     private javax.swing.JButton new_btn;
     private javax.swing.JButton open_btn;
     private javax.swing.JButton rename_btn;
     private javax.swing.JButton share_btn;
+    private javax.swing.JScrollPane sharedWithMe;
+    private javax.swing.JList<String> sharedWithMeList;
     // End of variables declaration//GEN-END:variables
 }

@@ -66,7 +66,7 @@ public class ServerRepo {
 
     public String getOwner(int fileId) throws SQLException {
         String query = "SELECT userId FROM remotedocs_permissions WHERE" 
-        +"fileId=? and permission = 0";
+        +" fileId=? and permission = 0";
 
         Connection connection = this.newConnection();
         PreparedStatement statement = connection.prepareStatement(query);
@@ -81,14 +81,15 @@ public class ServerRepo {
     }
 
     public void registerUser(String username, String hashedPassword, String salt) throws SQLException {
-        String query = "INSERT INTO remotedocs_users (username, password, salt) VALUES (?, ?, ?)";
+        String query = "INSERT INTO remotedocs_users (username, password, salt, public_key) VALUES (?, ?, ?, ?)";
 
         Connection connection = this.newConnection();
         PreparedStatement statement = connection.prepareStatement(query);
         statement.setString(1, username);
         statement.setString(2, hashedPassword);
         statement.setString(3, salt);
-        statement.executeQuery();
+        statement.setString(4, "");
+        statement.executeUpdate();
     }
 
     public FileDetails createFile(int id, String name, String username) throws SQLException {
@@ -103,13 +104,13 @@ public class ServerRepo {
         createFile.setString(2, name);
         createFile.setString(3, "");
         createFile.setString(4, username);
-        createFile.executeQuery();
+        createFile.executeUpdate();
 
         addFilePermissions.setString(1, username);
         addFilePermissions.setInt(2, id);
         addFilePermissions.setInt(3, Permissions.OWNER.getValue());
         addFilePermissions.setString(4, ""); // TODO: Add encrypted shared key.
-        addFilePermissions.executeQuery();
+        addFilePermissions.executeUpdate();
 
         getTimeChange.setInt(1,id);
         ResultSet getTime = getTimeChange.executeQuery();
@@ -185,7 +186,7 @@ public class ServerRepo {
         return null;
     }
     public List<FileDetails> getListDocuments(String username) throws SQLException {
-        String query = "SELECT fileId,name,permission FROM remotedocs_permissions,remotedocs_files WHERE fileId = id and username=?";
+        String query = "SELECT fileId,name,permission FROM remotedocs_permissions,remotedocs_files WHERE fileId = id and userId=?";
         ArrayList<FileDetails> listOfDocuments = new ArrayList<>();
         Connection connection = this.newConnection();
         PreparedStatement statement = connection.prepareStatement(query);
