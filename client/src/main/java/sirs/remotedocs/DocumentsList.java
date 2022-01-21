@@ -4,6 +4,8 @@
  */
 package sirs.remotedocs;
 
+import javax.swing.JOptionPane;
+
 /**
  *
  * @author tomaz
@@ -170,7 +172,18 @@ public class DocumentsList extends javax.swing.JFrame {
     }//GEN-LAST:event_delete_btnMouseClicked
 
     private void new_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_new_btnMouseClicked
-        // TODO add your handling code here:
+        String filename = JOptionPane.showInputDialog(this, "Insert filename: ");
+        CreateFileRequest createFileRequest = createFileRequest.newBuilder().setname(filename).setUsername(clientApp.getUsername()).setToken(clientApp.getToken()).build();
+        try {
+            CreateFileResponse createFileResponse = clientApp.getFrontend().createFile(createFileRequest);
+            clientApp.getEditdoc().setFileId(createFileResponse.getId());
+            clientApp.switchForm(this, clientApp.getEditdoc());
+        }
+        catch (StatusRuntimeException e) {
+            System.out.println("Caught exception with description: " +
+            e.getStatus().getDescription());
+            JOptionPane.showMessageDialog(null, e.getStatus().getDescription());
+        }
     }//GEN-LAST:event_new_btnMouseClicked
 
     private void open_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_open_btnMouseClicked

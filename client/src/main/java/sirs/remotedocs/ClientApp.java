@@ -13,6 +13,8 @@ public class ClientApp {
     private LoginRegisterForm register;
     private DocumentsList doclist;
     private EditDocumentForm editdoc;
+    private String token;
+    private String username;
  
     
     public ClientApp(String host, int port){
@@ -25,7 +27,23 @@ public class ClientApp {
         menu.setVisible(true);
     }
 
+    public void setUsername(String username){
+        this.username = username;
+    }
+
+    public void setToken(String token){
+        this.token = token;
+    }
+    
     /*--------------------GETTERS--------------------*/
+    public String getUsername(){
+        return username;
+    }
+    
+    public String getToken(){
+        return token;
+    }
+    
     public ServerFrontend getFrontend() {
         return frontend;
     }

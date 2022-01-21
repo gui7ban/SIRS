@@ -10,15 +10,18 @@ package sirs.remotedocs;
  */
 public class EditDocumentForm extends javax.swing.JFrame {
     private ClientApp clientApp;
+    private int fileId;
    /**
      * Creates new form EditDocumentForm
-     * @param formSelector
+     * @param clientApp
      */
-    public EditDocumentForm(ClientApp formSelector) {
+    public EditDocumentForm(ClientApp clientApp) {
         initComponents();
-        this.clientApp = formSelector;
+        this.clientApp = clientApp;
     }
-
+    public void setFileId(int id){
+        this.fileId = id;
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always

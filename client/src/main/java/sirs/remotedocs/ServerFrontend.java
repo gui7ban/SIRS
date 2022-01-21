@@ -37,6 +37,8 @@ public class ServerFrontend {
 
     public LoginResponse login(LoginRequest request) { return stub.login(request); }
 
+    public CreateFileResponse createFile(CreateFileRequest request) { return stub.createFile(request); }
+
     public void channelEnd() {
         channel.shutdownNow();
     }

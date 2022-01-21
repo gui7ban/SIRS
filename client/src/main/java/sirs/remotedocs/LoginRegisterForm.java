@@ -222,6 +222,8 @@ public class LoginRegisterForm extends javax.swing.JFrame {
 			    LoginResponse loginResponse = clientApp.getFrontend().login(loginRequest);
                 password_tf.setText("");
                 username_tf.setText("Username");
+                clientApp.setUsername(username);
+                clientApp.setToken(loginResponse.getToken());
                 clientApp.switchForm(this, clientApp.getDoclist());
                 
             }
@@ -237,6 +239,8 @@ public class LoginRegisterForm extends javax.swing.JFrame {
 			    RegisterResponse registerResponse = clientApp.getFrontend().register(registerRequest);
                 password_tf.setText("");
                 username_tf.setText("Username");
+                clientApp.setUsername(username);
+                clientApp.setToken(registerResponse.getToken());
                 clientApp.switchForm(this, clientApp.getDoclist());
                 
             }
