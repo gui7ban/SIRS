@@ -32,6 +32,7 @@
         <module>contract</module>
         <module>server</module>
         <module>crypto</module>
+        <module>backup</module>
     </modules>
 
  <dependencies> </dependencies>

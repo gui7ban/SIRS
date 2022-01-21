@@ -5,6 +5,7 @@ import io.grpc.ServerBuilder;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Scanner;
 
 public class ServerApp {
 
@@ -37,7 +38,13 @@ public class ServerApp {
 
 			// Server threads are running in the background.
 			logger.log("Server started on port: " + port);
-
+			
+			new Thread(() -> {
+				System.out.println("Press enter to shutdown...");
+				new Scanner(System.in).nextLine();
+				server.shutdown();
+			}).start();
+			
 			server.awaitTermination();
 			
 		} catch (InterruptedException | IOException e) {

@@ -10,6 +10,7 @@ import java.io.*;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Base64;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -33,8 +34,18 @@ public class Server {
 
 			// Add the token to the access tokens map:
 			this.accessTokens.put(name, accessToken);
+
 			return accessToken;
 		} catch (NoSuchAlgorithmException | SQLException e) {
+			this.logger.log(e.getMessage());
+			throw new RemoteDocsException(ErrorMessage.INTERNAL_ERROR);
+		}
+	}
+
+	public List<FileDetails> getListDocuments(String username) throws RemoteDocsException{
+		try {
+			return this.serverRepo.getListDocuments(username);
+		} catch (SQLException e) {
 			this.logger.log(e.getMessage());
 			throw new RemoteDocsException(ErrorMessage.INTERNAL_ERROR);
 		}
@@ -93,7 +104,7 @@ public class Server {
 		try {
 			int nextId = this.serverRepo.getMaxFileId() + 1;
 			File newFile = new File(String.valueOf(nextId));
-				// TODO: mudar o id para nome user + nome ficheiro (UPDATE CASCADE)
+
 			boolean fileExists = this.serverRepo.fileExists(username, name);
 			if(fileExists || !newFile.createNewFile())
 				throw new RemoteDocsException(ErrorMessage.FILE_ALREADY_EXISTS);
@@ -174,6 +185,8 @@ public class Server {
 			throw new RemoteDocsException(ErrorMessage.INTERNAL_ERROR);
 		}
 	}
+
+	
 
 	// TODO: Share file permissions.
 
