@@ -40,7 +40,9 @@ public class DocumentsList extends javax.swing.JFrame {
         rename_btn = new javax.swing.JButton();
         share_btn = new javax.swing.JButton();
         sharedWithMe = new javax.swing.JScrollPane();
+        sharedWithMeList = new javax.swing.JList<>();
         myDocuments = new javax.swing.JScrollPane();
+        myDocumentsList = new javax.swing.JList<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -100,7 +102,11 @@ public class DocumentsList extends javax.swing.JFrame {
 
         sharedWithMe.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Shared with me", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION));
 
+        sharedWithMe.setViewportView(sharedWithMeList);
+
         myDocuments.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "My Documents", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION));
+
+        myDocuments.setViewportView(myDocumentsList);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -142,8 +148,8 @@ public class DocumentsList extends javax.swing.JFrame {
                         .addGap(28, 28, 28))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(myDocuments, javax.swing.GroupLayout.DEFAULT_SIZE, 275, Short.MAX_VALUE)
-                            .addComponent(sharedWithMe))
+                            .addComponent(myDocuments)
+                            .addComponent(sharedWithMe, javax.swing.GroupLayout.DEFAULT_SIZE, 275, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(share_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -215,10 +221,12 @@ public class DocumentsList extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JButton logout_btn;
     private javax.swing.JScrollPane myDocuments;
+    private javax.swing.JList<String> myDocumentsList;
     private javax.swing.JButton new_btn;
     private javax.swing.JButton open_btn;
     private javax.swing.JButton rename_btn;
     private javax.swing.JButton share_btn;
     private javax.swing.JScrollPane sharedWithMe;
+    private javax.swing.JList<String> sharedWithMeList;
     // End of variables declaration//GEN-END:variables
 }
