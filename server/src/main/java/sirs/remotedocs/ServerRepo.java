@@ -9,6 +9,11 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.sql.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.google.protobuf.compiler.PluginProtos.CodeGeneratorResponse.File;
 
 public class ServerRepo {
 
@@ -61,15 +66,31 @@ public class ServerRepo {
         return null;
     }
 
+    public String getOwner(int fileId) throws SQLException {
+        String query = "SELECT userId FROM remotedocs_permissions WHERE" 
+        +"fileId=? and permission = 0";
+
+        Connection connection = this.newConnection();
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setInt(1, fileId);
+
+        ResultSet resultSet = statement.executeQuery();
+        if (resultSet.next()) {
+            return resultSet.getString("userId");
+        }
+
+        return null;
+    }
+
     public void registerUser(String username, String hashedPassword, String salt) throws SQLException {
         String query = "INSERT INTO remotedocs_users (username, password, salt) VALUES (?, ?, ?)";
 
         Connection connection = this.newConnection();
-        PreparedStatement registerUser = connection.prepareStatement(query);
-        registerUser.setString(1, username);
-        registerUser.setString(2, hashedPassword);
-        registerUser.setString(3, salt);
-        registerUser.executeQuery();
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setString(1, username);
+        statement.setString(2, hashedPassword);
+        statement.setString(3, salt);
+        statement.executeQuery();
     }
 
     public void createFile(int id, String name, String username) throws SQLException {
@@ -96,10 +117,10 @@ public class ServerRepo {
                 "A.id = B.fileId AND B.userId=? AND A.name=? AND B.permission = 0";
 
         Connection connection = this.newConnection();
-        PreparedStatement getFiles = connection.prepareStatement(query);
-        getFiles.setString(1, username);
-        getFiles.setString(2, name);
-        ResultSet resultSet = getFiles.executeQuery();
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setString(1, username);
+        statement.setString(2, name);
+        ResultSet resultSet = statement.executeQuery();
 
         return resultSet.next() && resultSet.getInt("total") > 0;
     }
@@ -107,8 +128,8 @@ public class ServerRepo {
     public int getMaxFileId() throws SQLException {
         String query = "SELECT MAX(id) AS maxId FROM remotedocs_files";
         Connection connection = this.newConnection();
-        PreparedStatement getId = connection.prepareStatement(query);
-        ResultSet resultSet = getId.executeQuery();
+        PreparedStatement statement = connection.prepareStatement(query);
+        ResultSet resultSet = statement.executeQuery();
 
         if (resultSet.next())
             return resultSet.getInt("maxId");
@@ -120,31 +141,31 @@ public class ServerRepo {
         String query = "UPDATE remotedocs_files SET digest=? WHERE id=?";
 
         Connection connection = this.newConnection();
-        PreparedStatement updateFile = connection.prepareStatement(query);
-        updateFile.setString(1, digest);
-        updateFile.setInt(2, id);
-        updateFile.executeQuery();
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setString(1, digest);
+        statement.setInt(2, id);
+        statement.executeQuery();
     }
 
     public void updateFileName(int id, String newName) throws SQLException {
         String query = "UPDATE remotedocs_files SET name=? WHERE id=?";
 
         Connection connection = this.newConnection();
-        PreparedStatement updateFile = connection.prepareStatement(query);
-        updateFile.setString(1, newName);
-        updateFile.setInt(2, id);
-        updateFile.executeQuery();
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setString(1, newName);
+        statement.setInt(2, id);
+        statement.executeQuery();
     }
 
     public FileDetails getFileDetails(int id, String username) throws SQLException {
         String query = "SELECT permission, sharedKey FROM remotedocs_permissions WHERE fileId=? AND username=?";
 
         Connection connection = this.newConnection();
-        PreparedStatement getFilePermissions = connection.prepareStatement(query);
-        getFilePermissions.setInt(1, id);
-        getFilePermissions.setString(2, username);
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setInt(1, id);
+        statement.setString(2, username);
 
-        ResultSet resultSet = getFilePermissions.executeQuery();
+        ResultSet resultSet = statement.executeQuery();
 
         if (resultSet.next()) {
             return new FileDetails(
@@ -154,5 +175,31 @@ public class ServerRepo {
         }
 
         return null;
+    }
+    public List<FileDetails> getListDocuments(String username) throws SQLException {
+        String query = "SELECT fileId,last_updater,name,time_change,permission FROM remotedocs_permissions,remotedocs_files WHERE fileId = id and username=?";
+        String query2 = "SELECT userId FROM remotedocs_permission where fileId=? and permission = 0";
+        ArrayList<FileDetails> listOfDocuments = new ArrayList<>();
+        Connection connection = this.newConnection();
+        PreparedStatement statement = connection.prepareStatement(query);
+        PreparedStatement getOwner = connection.prepareStatement(query2);
+        statement.setString(1, username);
+
+        ResultSet resultSet = statement.executeQuery();
+        while(resultSet.next()){
+            int fileId = resultSet.getInt("fileId");
+            String name = resultSet.getString("name");
+            int permission = resultSet.getInt("permission");
+            getOwner.setInt(1, fileId);
+            ResultSet ownerSet = getOwner.executeQuery();
+            ownerSet.next();
+            String owner = ownerSet.getString("userId");
+            LocalDateTime time_change = resultSet.getTimestamp("time_change").toLocalDateTime();
+            String last_updater = resultSet.getString("last_updater");
+         
+            listOfDocuments.add(new FileDetails(fileId, name, permission, owner, time_change, last_updater));
+        }
+
+        return listOfDocuments;
     }
 }
