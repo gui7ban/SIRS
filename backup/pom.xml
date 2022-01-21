@@ -14,7 +14,7 @@
    
 
     <properties>
-        <mainClass>sirs.remotedocs.BackUpServerApp</mainClass>
+        <mainClass>BackUpServerApp</mainClass>
 		<server.host>localhost</server.host>
 		<server.port>8081</server.port>
     </properties>
