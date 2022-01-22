@@ -110,11 +110,19 @@ public class ServerServiceImpl extends RemoteDocsGrpc.RemoteDocsImplBase
 					request.getUsername(),
 					request.getToken()
 			);
+			Timestamp ts = Timestamp.newBuilder().setSeconds(fileDetails
+				.getTimeChange()
+				.atZone(ZoneId.systemDefault())
+				.toEpochSecond()
+			).build();
 
 			DownloadResponse response = DownloadResponse
 					.newBuilder()
 					.setContent(ByteString.copyFrom(fileDetails.getContent()))
 					.setKey(fileDetails.getSharedKey())
+					.setOwner(fileDetails.getOwner())
+					.setLastUpdater(fileDetails.getLastUpdater())
+					.setLastChange(ts)
 					.build();
 
 			responseObserver.onNext(response);

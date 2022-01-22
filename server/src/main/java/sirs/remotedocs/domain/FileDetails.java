@@ -20,8 +20,14 @@ public class FileDetails {
         this.name = name;
         this.permission = permission;
     }
-
-
+    // GetDocument aka Download
+    public FileDetails(String key, String owner, String last_updater, LocalDateTime time_change){
+        this.sharedKey = key;
+        this.owner = owner;
+        this.last_updater = last_updater;
+        this.time_change = time_change;
+    }
+    
     public FileDetails(String sharedKey, int permission) {
         this.sharedKey = sharedKey;
         this.permission = permission;

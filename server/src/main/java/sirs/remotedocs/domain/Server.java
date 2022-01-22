@@ -126,18 +126,22 @@ public class Server {
 			throw new RemoteDocsException(ErrorMessage.FILE_DOESNT_EXIST);
 
 		try {
-			FileDetails fileDetails = this.serverRepo.getFileDetails(id, username);
-			if (fileDetails == null)
+			int permission = this.serverRepo.getFilePermission(id, username);
+			if (permission == -1)
 				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_ACCESS);
-			else if (fileDetails.getPermission() == 1)
+			else if (permission == 1)
 				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_WRITE);
-
+			
+			
+			String fileDigest = HashOperations.digest(Base64.getEncoder().encodeToString(content), null);
+			this.serverRepo.updateFileDigest(id, fileDigest, username);
+			
+			
 			FileOutputStream out = new FileOutputStream(file);
 			out.write(content);
 			out.close();
 
-			String fileDigest = HashOperations.digest(Base64.getEncoder().encodeToString(content), null);
-			this.serverRepo.updateFileDigest(id, fileDigest);
+			
 		} catch (IOException | NoSuchAlgorithmException | SQLException e) {
 			this.logger.log(e.getMessage());
 			throw new RemoteDocsException(ErrorMessage.INTERNAL_ERROR);
@@ -152,7 +156,7 @@ public class Server {
 			FileDetails fileDetails = this.serverRepo.getFileDetails(id, username);
 			if (fileDetails == null)
 				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_ACCESS);
-
+			// TODO: check digest
 			File file = new File(String.valueOf(id));
 			if (!file.exists())
 				throw new RemoteDocsException(ErrorMessage.FILE_DOESNT_EXIST);
@@ -173,10 +177,10 @@ public class Server {
 			throw new RemoteDocsException(ErrorMessage.INVALID_SESSION);
 
 		try {
-			FileDetails fileDetails = this.serverRepo.getFileDetails(id, username);
-			if (fileDetails == null)
+			int permission = this.serverRepo.getFilePermission(id, username);
+			if (permission == -1)
 				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_ACCESS);
-			else if (fileDetails.getPermission() != 0)
+			else if (permission != 0)
 				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_FILENAME_CHANGE);
 
 			this.serverRepo.updateFileName(id, newName);
