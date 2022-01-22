@@ -82,6 +82,7 @@ public class DocumentsList extends javax.swing.JFrame {
                 return renderer;
             }
         });
+        disableButtons();
     }
 
     public void setMyDocumentsList(String[] myDocs){
@@ -93,15 +94,16 @@ public class DocumentsList extends javax.swing.JFrame {
         sharedWithMeList.setListData(sharedList);
     }
 
-    public void disableButtons(boolean flag){
+    public void disableButtons(){
         open_btn.setEnabled(false);
         delete_btn.setEnabled(false);
         share_btn.setEnabled(false);
         rename_btn.setEnabled(false);
-        if (flag){
-            myDocumentsList.clearSelection();
-            sharedWithMeList.clearSelection();
-        }
+    }
+
+    public void clearSelectionOfLists(){
+        myDocumentsList.clearSelection();
+        sharedWithMeList.clearSelection();
     }
     
     
@@ -370,6 +372,18 @@ public class DocumentsList extends javax.swing.JFrame {
     }//GEN-LAST:event_open_btnMouseClicked
 
     private void logout_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_logout_btnMouseClicked
+        String[] empty = {};
+        clientApp.setFiles(new TreeMap<>());
+        setMyDocumentsList(empty);
+        setSharedList(empty);
+        disableButtons();
+        LogoutRequest logoutRequest = LogoutRequest.newBuilder().setUsername(clientApp.getUsername()).setToken(clientApp.getToken()).build();
+        try {
+            clientApp.getFrontend().logout(logoutRequest);
+        } catch (StatusRuntimeException e) {
+            System.out.println("Caught exception with description: " +
+            e.getStatus().getDescription());
+        }
         clientApp.switchForm(this, clientApp.getMenu());
     }//GEN-LAST:event_logout_btnMouseClicked
 

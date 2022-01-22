@@ -103,6 +103,15 @@ message DeleteFileResponse{
 
 }
 
+message LogoutRequest {
+    string token = 1;
+    string username = 2;
+}
+
+message LogoutResponse {
+    
+}
+
 service RemoteDocs {
 	rpc Ping(PingRequest) returns (PingResponse);
 	rpc Login(LoginRequest) returns (LoginResponse);
@@ -113,4 +122,5 @@ service RemoteDocs {
 	rpc UpdateFileName(UpdateFileNameRequest) returns (UpdateFileNameResponse);
     rpc GetDocumentsList(GetDocumentsRequest) returns (GetDocumentsResponse);
     rpc DeleteFile(DeleteFileRequest) returns (DeleteFileResponse);
+    rpc Logout(LogoutRequest) returns (LogoutResponse); 
 }

@@ -45,6 +45,8 @@ public class ServerFrontend {
 
     public DeleteFileResponse deleteFile(DeleteFileRequest request) { return stub.deleteFile(request); }
     
+    public LogoutResponse logout(LogoutRequest request) { return stub.logout(request); }
+
     public void channelEnd() {
         channel.shutdownNow();
     }

@@ -241,7 +241,7 @@ public class LoginRegisterForm extends javax.swing.JFrame {
                 DocumentsList docForm = clientApp.getDoclist();
                 docForm.setMyDocumentsList(clientApp.getMyDocs());
                 docForm.setSharedList(clientApp.getSharedWithMe());
-                docForm.disableButtons(true);
+                docForm.clearSelectionOfLists();
                 clientApp.switchForm(this, docForm);
                 
             }
@@ -259,15 +259,7 @@ public class LoginRegisterForm extends javax.swing.JFrame {
                 username_tf.setText("Username");
                 clientApp.setUsername(username);
                 clientApp.setToken(registerResponse.getToken());
-                DocumentsList docForm = clientApp.getDoclist();
-                
-                docForm.disableButtons(false);
-                //TODO: passar isto para a função logout
-                String[] empty = {};
-                clientApp.setFiles(new TreeMap<>());
-                docForm.setMyDocumentsList(empty);
-                docForm.setSharedList(empty);
-                clientApp.switchForm(this, docForm);
+                clientApp.switchForm(this, clientApp.getDoclist());
                 
             }
 		    catch (StatusRuntimeException e) {

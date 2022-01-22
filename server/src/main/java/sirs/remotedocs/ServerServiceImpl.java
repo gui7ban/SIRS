@@ -191,4 +191,19 @@ public class ServerServiceImpl extends RemoteDocsGrpc.RemoteDocsImplBase
 			responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
 		}
 	}
+
+	@Override
+	public void logout(LogoutRequest request, StreamObserver<LogoutResponse> responseObserver) {
+		try {
+			server.logout(
+					request.getUsername(),
+					request.getToken()
+			);
+
+			responseObserver.onNext(LogoutResponse.newBuilder().build());
+			responseObserver.onCompleted();
+		} catch (RemoteDocsException e) {
+			responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
+		}
+	}
 }

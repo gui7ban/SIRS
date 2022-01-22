@@ -185,7 +185,10 @@ public class EditDocumentForm extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void cancel_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_cancel_btnMouseClicked
-        clientApp.switchForm(this, clientApp.getDoclist());
+        DocumentsList docForm = clientApp.getDoclist();
+        docForm.disableButtons();
+        docForm.clearSelectionOfLists();
+        clientApp.switchForm(this, docForm);
     }//GEN-LAST:event_cancel_btnMouseClicked
 
     private void save_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_save_btnMouseClicked
@@ -195,7 +198,10 @@ public class EditDocumentForm extends javax.swing.JFrame {
         UploadRequest uploadRequest = UploadRequest.newBuilder().setId(this.id).setContent(ByteString.copyFromUtf8(content)).setUsername(clientApp.getUsername()).setToken(clientApp.getToken()).build();
         try {
             clientApp.getFrontend().upload(uploadRequest);
-            clientApp.switchForm(this, clientApp.getDoclist());
+            DocumentsList docForm = clientApp.getDoclist();
+            docForm.disableButtons();
+            docForm.clearSelectionOfLists();
+            clientApp.switchForm(this, docForm);
         
         }
         catch (StatusRuntimeException e) {
