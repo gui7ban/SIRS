@@ -16,7 +16,7 @@ public class BackupServer {
     private SecretKey secretKey;
     private PublicKey serverPublicKey;
     private byte[] serverInitializationVector;
-    private Map<Integer, Boolean> nonces = new HashMap<>();
+    private final Map<Integer, Boolean> nonces = new HashMap<>();
 
     public BackupServer() {
         try {

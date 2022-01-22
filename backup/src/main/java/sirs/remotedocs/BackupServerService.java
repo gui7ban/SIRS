@@ -16,7 +16,6 @@ import javax.crypto.NoSuchPaddingException;
 import java.security.*;
 
 import static io.grpc.Status.ABORTED;
-import static io.grpc.Status.INVALID_ARGUMENT;
 
 public class BackupServerService extends RemoteDocsBackupGrpc.RemoteDocsBackupImplBase {
 
