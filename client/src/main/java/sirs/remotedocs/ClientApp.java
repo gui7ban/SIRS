@@ -20,6 +20,7 @@ public class ClientApp {
     private LoginRegisterForm register;
     private DocumentsList doclist;
     private EditDocumentForm editdoc;
+    private ShareForm share;
     private String token;
     private String username;
     private Map<Integer,FileDetails> files = new TreeMap<>();
@@ -33,6 +34,7 @@ public class ClientApp {
         register = new LoginRegisterForm(this, "REGISTER");
         doclist = new DocumentsList(this);
         editdoc = new EditDocumentForm(this);
+        share = new ShareForm(this);
         menu.setVisible(true);
     }
 
@@ -103,6 +105,10 @@ public class ClientApp {
 
     public Menu getMenu() {
         return menu;
+    }
+    
+    public ShareForm getShare(){
+        return share;
     }
 
     public LoginRegisterForm getLogin() {
