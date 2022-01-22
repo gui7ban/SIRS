@@ -33,10 +33,6 @@ public class ClientApp {
         menu.setVisible(true);
     }
 
-    public void updateFileDetails(int id){
-        //update timestamp when user saves 
-    }
-
     public String[] getSharedWithMe(){
         ArrayList<String> result = new ArrayList<>();
         for(FileDetails file: this.files.values()){

@@ -293,9 +293,16 @@ public class DocumentsList extends javax.swing.JFrame {
     }//GEN-LAST:event_new_btnMouseClicked
 
     private void open_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_open_btnMouseClicked
-        String selectedValue = myDocumentsList.getSelectedValue();
+        String selectedValue;
+        if(!myDocumentsList.isSelectionEmpty()){
+            selectedValue = myDocumentsList.getSelectedValue();
+        }
+        else{
+            selectedValue = sharedWithMeList.getSelectedValue();
+        }
             if (!selectedValue.isEmpty()) {
                 int id = Integer.parseInt(selectedValue.split("/")[0]);
+
                 DownloadRequest downloadRequest = DownloadRequest.newBuilder().setId(id).setUsername(clientApp.getUsername()).setToken(clientApp.getToken()).build();
                 try {
                     DownloadResponse downloadResponse = clientApp.getFrontend().download(downloadRequest);

@@ -104,7 +104,7 @@ public class Server {
 			throw new RemoteDocsException(ErrorMessage.FILE_NAME_EMPTY);
 		try {
 			
-			int nextId = this.serverRepo.getMaxFileId();  //tirei o +1 
+			int nextId = this.serverRepo.getMaxFileId() + 1; 
 			File newFile = new File(String.valueOf(nextId));
 
 			boolean fileExists = this.serverRepo.fileExists(username, name);
