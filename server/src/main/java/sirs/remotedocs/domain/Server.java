@@ -100,8 +100,10 @@ public class Server {
 	public FileDetails createFile(String name, String username, String token) throws RemoteDocsException {
 		if (!this.isSessionValid(username, token))
 			throw new RemoteDocsException(ErrorMessage.INVALID_SESSION);
-
+		if (name.isBlank())
+			throw new RemoteDocsException(ErrorMessage.FILE_NAME_EMPTY);
 		try {
+			
 			int nextId = this.serverRepo.getMaxFileId() + 1;
 			File newFile = new File(String.valueOf(nextId));
 
@@ -175,7 +177,8 @@ public class Server {
 	public void updateFileName(int id, String newName, String username, String token) throws RemoteDocsException {
 		if (!this.isSessionValid(username, token))
 			throw new RemoteDocsException(ErrorMessage.INVALID_SESSION);
-
+		if (newName.isBlank())
+			throw new RemoteDocsException(ErrorMessage.FILE_NAME_EMPTY);
 		try {
 			int permission = this.serverRepo.getFilePermission(id, username);
 			if (permission == -1)

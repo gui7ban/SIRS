@@ -241,6 +241,7 @@ public class LoginRegisterForm extends javax.swing.JFrame {
                 DocumentsList docForm = clientApp.getDoclist();
                 docForm.setMyDocumentsList(clientApp.getMyDocs());
                 docForm.setSharedList(clientApp.getSharedWithMe());
+                docForm.disableButtons(true);
                 clientApp.switchForm(this, docForm);
                 
             }
@@ -258,7 +259,10 @@ public class LoginRegisterForm extends javax.swing.JFrame {
                 username_tf.setText("Username");
                 clientApp.setUsername(username);
                 clientApp.setToken(registerResponse.getToken());
-                clientApp.switchForm(this, clientApp.getDoclist());
+                DocumentsList docForm = clientApp.getDoclist();
+
+                docForm.disableButtons(false);
+                clientApp.switchForm(this, docForm);
                 
             }
 		    catch (StatusRuntimeException e) {

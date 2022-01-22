@@ -92,6 +92,17 @@ public class DocumentsList extends javax.swing.JFrame {
     public void setSharedList(String[] sharedList){
         sharedWithMeList.setListData(sharedList);
     }
+
+    public void disableButtons(boolean flag){
+        open_btn.setEnabled(false);
+        delete_btn.setEnabled(false);
+        share_btn.setEnabled(false);
+        rename_btn.setEnabled(false);
+        if (flag){
+            myDocumentsList.clearSelection();
+            sharedWithMeList.clearSelection();
+        }
+    }
     
     
     /**

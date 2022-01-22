@@ -174,7 +174,7 @@ public class ServerRepo {
         statement.setString(1, digest);
         statement.setString(2, username);
         statement.setInt(3, id);
-        statement.executeQuery();
+        statement.executeUpdate();
     }
 
     public void updateFileName(int id, String newName) throws SQLException {
@@ -184,11 +184,11 @@ public class ServerRepo {
         PreparedStatement statement = connection.prepareStatement(query);
         statement.setString(1, newName);
         statement.setInt(2, id);
-        statement.executeQuery();
+        statement.executeUpdate();
     }
 
     public int getFilePermission(int id, String username) throws SQLException {
-        String query = "SELECT permission FROM remotedocs_permissions WHERE fileId=? AND username=?";
+        String query = "SELECT permission FROM remotedocs_permissions WHERE fileId=? AND userId=?";
 
         Connection connection = this.newConnection();
         PreparedStatement statement = connection.prepareStatement(query);
