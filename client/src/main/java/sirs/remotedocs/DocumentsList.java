@@ -20,6 +20,7 @@ import io.grpc.StatusRuntimeException;
 import sirs.remotedocs.grpc.Contract.CreateFileRequest;
 import sirs.remotedocs.grpc.Contract.CreateFileResponse;
 import sirs.remotedocs.grpc.Contract.DownloadRequest;
+import sirs.remotedocs.grpc.Contract.DownloadResponse;
 import sirs.remotedocs.grpc.Contract.UpdateFileNameRequest;
 import sirs.remotedocs.grpc.Contract.UploadRequest;
 /**
@@ -297,14 +298,15 @@ public class DocumentsList extends javax.swing.JFrame {
                 int id = Integer.parseInt(selectedValue.split("/")[0]);
                 DownloadRequest downloadRequest = DownloadRequest.newBuilder().setId(id).setUsername(clientApp.getUsername()).setToken(clientApp.getToken()).build();
                 try {
-                    clientApp.getFrontend().download(downloadRequest);
+                    DownloadResponse downloadResponse = clientApp.getFrontend().download(downloadRequest);
                     EditDocumentForm editDocForm = clientApp.getEditdoc();
                     String content = downloadResponse.getContent().toStringUtf8();
-                    editDocForm.setContent(content);
-                    /*editDocForm.setLastUpdater(username);
-                    editDocForm.setOwner(username);
-                    editDocForm.setDateChange(timestamp);   
-                    editDocForm.setTitle(filename);*/      
+                    editDocForm.setPaneContent(content);
+                    FileDetails details = clientApp.getFile(id);
+                    editDocForm.setLastUpdater(details.getLastUpdater());
+                    editDocForm.setOwner(details.getOwner());
+                    editDocForm.setDateChange(details.getTimeChange());   
+                    editDocForm.setTitle(details.getName());   
                     clientApp.switchForm(this, clientApp.getEditdoc());
                     //verificar se content é igual content anterior
                 }

@@ -81,7 +81,7 @@ public class ServerRepo {
     }
     public FileDetails getFileDetails(int fileId, String username) throws SQLException {
         String query = "SELECT time_change,last_updater,sharedKey FROM remotedocs_files,"
-        +" remotedocs_permissions WHERE fileId = id and fileId=? and username=?";
+        +" remotedocs_permissions WHERE fileId = id and fileId=? and userId=?"; //changed username to userId
         String owner = getOwner(fileId);
         Connection connection = this.newConnection();
         PreparedStatement statement = connection.prepareStatement(query);
@@ -194,7 +194,6 @@ public class ServerRepo {
         PreparedStatement statement = connection.prepareStatement(query);
         statement.setInt(1, id);
         statement.setString(2, username);
-
         ResultSet resultSet = statement.executeQuery();
 
         if (resultSet.next()) {

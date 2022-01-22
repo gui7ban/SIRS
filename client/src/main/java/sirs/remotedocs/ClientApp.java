@@ -21,6 +21,7 @@ public class ClientApp {
     private String username;
     private Map<Integer,FileDetails> files = new TreeMap<>();
  
+
     
     public ClientApp(String host, int port){
         frontend = new ServerFrontend(host, port);
@@ -32,6 +33,9 @@ public class ClientApp {
         menu.setVisible(true);
     }
 
+    public void updateFileDetails(int id){
+        //update timestamp when user saves 
+    }
 
     public String[] getSharedWithMe(){
         ArrayList<String> result = new ArrayList<>();
@@ -77,6 +81,11 @@ public class ClientApp {
         this.files.put(id, file);
     }
     /*--------------------GETTERS--------------------*/
+   
+    public FileDetails getFile(int id){
+        return files.get(id);
+    }
+    
     public String getUsername(){
         return username;
     }

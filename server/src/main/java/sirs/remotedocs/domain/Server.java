@@ -104,13 +104,13 @@ public class Server {
 			throw new RemoteDocsException(ErrorMessage.FILE_NAME_EMPTY);
 		try {
 			
-			int nextId = this.serverRepo.getMaxFileId() + 1;
+			int nextId = this.serverRepo.getMaxFileId();  //tirei o +1 
 			File newFile = new File(String.valueOf(nextId));
 
 			boolean fileExists = this.serverRepo.fileExists(username, name);
 			if(fileExists || !newFile.createNewFile())
 				throw new RemoteDocsException(ErrorMessage.FILE_ALREADY_EXISTS);
-
+			System.out.println("createFile --->NEXTID: " + nextId + "NAME: "+name + "USERNAME:"+username);
 			return this.serverRepo.createFile(nextId, name, username);
 			 
 		} catch (IOException | SQLException e) {
@@ -120,6 +120,7 @@ public class Server {
 	}
 
 	public void uploadFile(int id, byte[] content, String username, String token) throws RemoteDocsException {
+		System.out.println("uploadFile---> FILEID:"+id+" CONTENT: "+content + " USERNAME: " + username + "TOKEN:" + token);
 		if (!this.isSessionValid(username, token))
 			throw new RemoteDocsException(ErrorMessage.INVALID_SESSION);
 

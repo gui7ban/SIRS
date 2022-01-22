@@ -193,6 +193,7 @@ public class EditDocumentForm extends javax.swing.JFrame {
         UploadRequest uploadRequest = UploadRequest.newBuilder().setId(this.id).setContent(ByteString.copyFromUtf8(content)).setUsername(clientApp.getUsername()).setToken(clientApp.getToken()).build();
             try {
                 clientApp.getFrontend().upload(uploadRequest);
+                //atualizar time stamp na lista de files co clientApp
                 clientApp.switchForm(this, clientApp.getDoclist());
                 //verificar se content é igual content anterior
             }
