@@ -260,8 +260,13 @@ public class LoginRegisterForm extends javax.swing.JFrame {
                 clientApp.setUsername(username);
                 clientApp.setToken(registerResponse.getToken());
                 DocumentsList docForm = clientApp.getDoclist();
-
+                
                 docForm.disableButtons(false);
+                //TODO: passar isto para a função logout
+                String[] empty = {};
+                clientApp.setFiles(new TreeMap<>());
+                docForm.setMyDocumentsList(empty);
+                docForm.setSharedList(empty);
                 clientApp.switchForm(this, docForm);
                 
             }

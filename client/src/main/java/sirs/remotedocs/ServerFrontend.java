@@ -41,7 +41,10 @@ public class ServerFrontend {
 
     public DownloadResponse download(DownloadRequest request) { return stub.download(request); }
 
+    public GetDocumentsResponse getDocumentsList(GetDocumentsRequest request) { return stub.getDocumentsList(request); }
 
+    public DeleteFileResponse deleteFile(DeleteFileRequest request) { return stub.deleteFile(request); }
+    
     public void channelEnd() {
         channel.shutdownNow();
     }

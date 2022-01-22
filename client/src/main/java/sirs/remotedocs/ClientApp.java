@@ -6,6 +6,9 @@
 package sirs.remotedocs;
 
 import javax.swing.*;
+
+import com.google.protobuf.compiler.PluginProtos.CodeGeneratorResponse.File;
+
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.ArrayList;
@@ -69,6 +72,10 @@ public class ClientApp {
 
     public void addFile(FileDetails file){
         this.files.put(file.getId(), file);
+    }
+
+    public void deleteFile(int id){
+        this.files.remove(id);
     }
     
     public void updateFileName(int id,String filename){

@@ -190,17 +190,19 @@ public class EditDocumentForm extends javax.swing.JFrame {
 
     private void save_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_save_btnMouseClicked
         String content = editorPane.getText();
+        //TODO: verificar se content é igual content anterior
+
         UploadRequest uploadRequest = UploadRequest.newBuilder().setId(this.id).setContent(ByteString.copyFromUtf8(content)).setUsername(clientApp.getUsername()).setToken(clientApp.getToken()).build();
-            try {
-                clientApp.getFrontend().upload(uploadRequest);
-                clientApp.switchForm(this, clientApp.getDoclist());
-                /*verificar se content é igual content anterior*/
-            }
-            catch (StatusRuntimeException e) {
-                System.out.println("Caught exception with description: " +
-                e.getStatus().getDescription());
-                JOptionPane.showMessageDialog(null, e.getStatus().getDescription());
-            }
+        try {
+            clientApp.getFrontend().upload(uploadRequest);
+            clientApp.switchForm(this, clientApp.getDoclist());
+        
+        }
+        catch (StatusRuntimeException e) {
+            System.out.println("Caught exception with description: " +
+            e.getStatus().getDescription());
+            JOptionPane.showMessageDialog(null, e.getStatus().getDescription());
+        }
     }//GEN-LAST:event_save_btnMouseClicked
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing

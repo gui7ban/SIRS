@@ -32,7 +32,7 @@ public class ServerServiceImpl extends RemoteDocsGrpc.RemoteDocsImplBase
 		try {
 			String username = request.getUsername();
 			String accessToken = server.login(username, request.getPassword());
-			List<FileDetails> listOfDocuments = server.getListDocuments(username);
+			List<FileDetails> listOfDocuments = server.getListDocuments(username, null);
 			LoginResponse.Builder builder = LoginResponse.newBuilder().setToken(accessToken);
 
 			for(FileDetails document: listOfDocuments) {
@@ -143,6 +143,49 @@ public class ServerServiceImpl extends RemoteDocsGrpc.RemoteDocsImplBase
 			);
 
 			responseObserver.onNext(UpdateFileNameResponse.newBuilder().build());
+			responseObserver.onCompleted();
+		} catch (RemoteDocsException e) {
+			responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
+		}
+	}
+
+	@Override
+	public void getDocumentsList(GetDocumentsRequest request, StreamObserver<GetDocumentsResponse> responseObserver) {
+		try {
+			List<FileDetails> listOfDocuments = server.getListDocuments(
+				request.getUsername(),
+				request.getToken()
+				);
+			GetDocumentsResponse.Builder builder = GetDocumentsResponse.newBuilder();
+
+			for(FileDetails document: listOfDocuments) {
+				DocumentInfo docGrpc = DocumentInfo
+						.newBuilder()
+						.setId(document.getId())
+						.setName(document.getName())
+						.setRelationship(document.getPermission())
+						.build();
+
+				builder.addDocuments(docGrpc);
+			}
+
+			responseObserver.onNext(builder.build());
+			responseObserver.onCompleted();
+		} catch (RemoteDocsException e) {
+			responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
+		}
+	}
+
+	@Override
+	public void deleteFile(DeleteFileRequest request, StreamObserver<DeleteFileResponse> responseObserver) {
+		try {
+			server.deleteFile(
+					request.getId(),
+					request.getUsername(),
+					request.getToken()
+			);
+
+			responseObserver.onNext(DeleteFileResponse.newBuilder().build());
 			responseObserver.onCompleted();
 		} catch (RemoteDocsException e) {
 			responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());

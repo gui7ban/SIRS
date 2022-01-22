@@ -84,6 +84,25 @@ message PingResponse {
 	string outputText = 1;
 }
 
+message GetDocumentsRequest{
+    string token = 1;
+    string username = 2;
+}
+
+message GetDocumentsResponse{
+    repeated DocumentInfo documents = 1;
+}
+
+message DeleteFileRequest{
+    int32 id = 1;
+    string token = 2;
+    string username = 3;
+}
+
+message DeleteFileResponse{
+
+}
+
 service RemoteDocs {
 	rpc Ping(PingRequest) returns (PingResponse);
 	rpc Login(LoginRequest) returns (LoginResponse);
@@ -92,4 +111,6 @@ service RemoteDocs {
 	rpc Upload(UploadRequest) returns (UploadResponse);
 	rpc CreateFile(CreateFileRequest) returns (CreateFileResponse);
 	rpc UpdateFileName(UpdateFileNameRequest) returns (UpdateFileNameResponse);
+    rpc GetDocumentsList(GetDocumentsRequest) returns (GetDocumentsResponse);
+    rpc DeleteFile(DeleteFileRequest) returns (DeleteFileResponse);
 }

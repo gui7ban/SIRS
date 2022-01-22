@@ -42,7 +42,9 @@ public class Server {
 		}
 	}
 
-	public List<FileDetails> getListDocuments(String username) throws RemoteDocsException {
+	public List<FileDetails> getListDocuments(String username, String token) throws RemoteDocsException {
+		if (token != null && !this.isSessionValid(username, token))
+			throw new RemoteDocsException(ErrorMessage.INVALID_SESSION);
 		try {
 			return this.serverRepo.getListDocuments(username);
 		} catch (SQLException e) {
@@ -110,7 +112,6 @@ public class Server {
 			boolean fileExists = this.serverRepo.fileExists(username, name);
 			if(fileExists || !newFile.createNewFile())
 				throw new RemoteDocsException(ErrorMessage.FILE_ALREADY_EXISTS);
-			System.out.println("createFile --->NEXTID: " + nextId + "NAME: "+name + "USERNAME:"+username);
 			return this.serverRepo.createFile(nextId, name, username);
 			 
 		} catch (IOException | SQLException e) {
@@ -120,7 +121,6 @@ public class Server {
 	}
 
 	public void uploadFile(int id, byte[] content, String username, String token) throws RemoteDocsException {
-		System.out.println("uploadFile---> FILEID:"+id+" CONTENT: "+content + " USERNAME: " + username + "TOKEN:" + token);
 		if (!this.isSessionValid(username, token))
 			throw new RemoteDocsException(ErrorMessage.INVALID_SESSION);
 
@@ -194,7 +194,23 @@ public class Server {
 		}
 	}
 
-	
+	public void deleteFile(int id, String username, String token) throws RemoteDocsException {
+		if (!this.isSessionValid(username, token))
+			throw new RemoteDocsException(ErrorMessage.INVALID_SESSION);
+		try {
+			int permission = this.serverRepo.getFilePermission(id, username);
+			if (permission == -1)
+				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_ACCESS);
+			else if (permission != 0)
+				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_FILE_DELETION);
+			File file = new File(String.valueOf(id));
+			file.delete();
+			this.serverRepo.deleteFile(id);
+		} catch (SQLException e) {
+			this.logger.log(e.getMessage());
+			throw new RemoteDocsException(ErrorMessage.INTERNAL_ERROR);
+		}
+	}
 
 	// TODO: Share file permissions.
 
