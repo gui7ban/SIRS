@@ -4,8 +4,12 @@
  */
 package sirs.remotedocs;
 
+import com.google.protobuf.ByteString;
+import io.grpc.StatusRuntimeException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import javax.swing.JOptionPane;
+import sirs.remotedocs.grpc.Contract.UploadRequest;
 
 
 /**
@@ -14,6 +18,7 @@ import java.time.format.DateTimeFormatter;
  */
 public class EditDocumentForm extends javax.swing.JFrame {
     private ClientApp clientApp;
+    private int id;
    /**
      * Creates new form EditDocumentForm
      * @param clientApp
@@ -22,6 +27,14 @@ public class EditDocumentForm extends javax.swing.JFrame {
         initComponents();
         this.clientApp = clientApp;
         
+    }
+    
+    public void setPaneContent(String content){
+        editorPane.setText(content);
+    }
+    
+    public void setId(int id){
+        this.id = id;
     }
     
     public void setOwner(String owner){
@@ -51,10 +64,10 @@ public class EditDocumentForm extends javax.swing.JFrame {
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
-        jButton2 = new javax.swing.JButton();
+        save_btn = new javax.swing.JButton();
         cancel_btn = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jEditorPane2 = new javax.swing.JEditorPane();
+        editorPane = new javax.swing.JEditorPane();
         jLabel2 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
@@ -66,11 +79,11 @@ public class EditDocumentForm extends javax.swing.JFrame {
 
         jPanel1.setBackground(new java.awt.Color(255, 102, 51));
 
-        jButton2.setBackground(new java.awt.Color(255, 255, 204));
-        jButton2.setText("Save");
-        jButton2.addMouseListener(new java.awt.event.MouseAdapter() {
+        save_btn.setBackground(new java.awt.Color(255, 255, 204));
+        save_btn.setText("Save");
+        save_btn.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jButton2MouseClicked(evt);
+                save_btnMouseClicked(evt);
             }
         });
 
@@ -82,7 +95,7 @@ public class EditDocumentForm extends javax.swing.JFrame {
             }
         });
 
-        jScrollPane2.setViewportView(jEditorPane2);
+        jScrollPane2.setViewportView(editorPane);
 
         jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel2.setForeground(new java.awt.Color(255, 255, 255));
@@ -117,7 +130,7 @@ public class EditDocumentForm extends javax.swing.JFrame {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(cancel_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 222, Short.MAX_VALUE)
-                        .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(save_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(8, 8, 8)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -152,7 +165,7 @@ public class EditDocumentForm extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cancel_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(save_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(20, 20, 20))
         );
 
@@ -175,9 +188,20 @@ public class EditDocumentForm extends javax.swing.JFrame {
         clientApp.switchForm(this, clientApp.getDoclist());
     }//GEN-LAST:event_cancel_btnMouseClicked
 
-    private void jButton2MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButton2MouseClicked
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton2MouseClicked
+    private void save_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_save_btnMouseClicked
+        String content = editorPane.getText();
+        UploadRequest uploadRequest = UploadRequest.newBuilder().setId(this.id).setContent(ByteString.copyFromUtf8(content)).setUsername(clientApp.getUsername()).setToken(clientApp.getToken()).build();
+            try {
+                clientApp.getFrontend().upload(uploadRequest);
+                clientApp.switchForm(this, clientApp.getDoclist());
+                //verificar se content é igual content anterior
+            }
+            catch (StatusRuntimeException e) {
+                System.out.println("Caught exception with description: " +
+                e.getStatus().getDescription());
+                JOptionPane.showMessageDialog(null, e.getStatus().getDescription());
+            }
+    }//GEN-LAST:event_save_btnMouseClicked
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         this.dispose();
@@ -188,8 +212,7 @@ public class EditDocumentForm extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancel_btn;
     private javax.swing.JTextField dateModified_tf;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JEditorPane jEditorPane2;
+    private javax.swing.JEditorPane editorPane;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -197,5 +220,6 @@ public class EditDocumentForm extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextField lastUpdater_tf;
     private javax.swing.JTextField owner_tf;
+    private javax.swing.JButton save_btn;
     // End of variables declaration//GEN-END:variables
 }
