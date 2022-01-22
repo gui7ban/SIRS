@@ -50,5 +50,5 @@ message EncryptedResponse {
 service RemoteDocsBackup {
     rpc BackupServerFiles(EncryptedRequest) returns (EncryptedResponse);
     rpc Handshake(HandshakeRequest) returns (HandshakeResponse);
-    rpc GetPublicKey(EncryptedRequest) returns (EncryptedResponse);
+    rpc GetPublicKey(PublicKeyRequest) returns (PublicKeyResponse);
 }
