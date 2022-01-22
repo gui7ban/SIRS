@@ -7,6 +7,7 @@ package sirs.remotedocs;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+
 /**
  *
  * @author tomaz
@@ -20,10 +21,15 @@ public class EditDocumentForm extends javax.swing.JFrame {
     public EditDocumentForm(ClientApp clientApp) {
         initComponents();
         this.clientApp = clientApp;
+        
     }
     
     public void setOwner(String owner){
         owner_tf.setText(owner);
+    }
+
+    public void setDocTitle(String filename){
+        this.setTitle(filename);
     }
     
     public void setDateChange(LocalDateTime timestamp){

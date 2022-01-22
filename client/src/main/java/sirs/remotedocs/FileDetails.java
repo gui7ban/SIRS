@@ -48,6 +48,10 @@ public class FileDetails {
         return name;
     }
 
+    public void setName(String filename) {
+        this.name = filename;
+    }
+
     public String getDigest(){
         return digest;
     }

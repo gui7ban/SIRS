@@ -8,6 +8,8 @@ import sirs.remotedocs.grpc.Contract.*;
 import io.grpc.StatusRuntimeException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import javax.swing.JOptionPane;
 
@@ -227,10 +229,10 @@ public class LoginRegisterForm extends javax.swing.JFrame {
                 username_tf.setText("Username");
                 
                 List<DocumentInfo> listGrpc = loginResponse.getDocumentsList();
-                List<FileDetails> listDocs = new ArrayList<>(); 
+                Map<Integer,FileDetails> listDocs = new TreeMap<>(); 
                 
                 for (DocumentInfo docGrpc: listGrpc){
-                    listDocs.add(new FileDetails(docGrpc.getId(), docGrpc.getName(), docGrpc.getRelationship()));
+                    listDocs.put(docGrpc.getId(), new FileDetails(docGrpc.getId(), docGrpc.getName(), docGrpc.getRelationship()));
                 }
 
                 clientApp.setFiles(listDocs);

@@ -6,7 +6,8 @@
 package sirs.remotedocs;
 
 import javax.swing.*;
-import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.ArrayList;
 
 public class ClientApp {
@@ -18,7 +19,7 @@ public class ClientApp {
     private EditDocumentForm editdoc;
     private String token;
     private String username;
-    private List<FileDetails> files = new ArrayList<>();
+    private Map<Integer,FileDetails> files = new TreeMap<>();
  
     
     public ClientApp(String host, int port){
@@ -34,9 +35,9 @@ public class ClientApp {
 
     public String[] getSharedWithMe(){
         ArrayList<String> result = new ArrayList<>();
-        for(FileDetails file: this.files){
+        for(FileDetails file: this.files.values()){
             if(file.getPermission() != 0){
-                result.add(file.getName());
+                result.add(file.getId()+"/"+file.getName());
             }
         }
         return result.stream().toArray(String[]::new);
@@ -44,9 +45,9 @@ public class ClientApp {
 
     public String[] getMyDocs(){
         ArrayList<String> result = new ArrayList<>();
-        for(FileDetails file: this.files){
+        for(FileDetails file: this.files.values()){
             if(file.getPermission() == 0){
-                result.add(file.getName());
+                result.add(file.getId()+"/"+file.getName());
             }
         }
         return result.stream().toArray(String[]::new);
@@ -62,21 +63,22 @@ public class ClientApp {
         this.token = token;
     }
 
-    public void setFiles(List<FileDetails> files) {
+    public void setFiles(Map<Integer,FileDetails> files) {
         this.files = files;
     }  
 
     public void addFile(FileDetails file){
-        this.files.add(file);
+        this.files.put(file.getId(), file);
     }
     
+    public void updateFileName(int id,String filename){
+        FileDetails file = this.files.get(id);
+        file.setName(filename);
+        this.files.put(id, file);
+    }
     /*--------------------GETTERS--------------------*/
     public String getUsername(){
         return username;
-    }
-
-    public List<FileDetails> getFiles(){
-        return files;
     }
     
     public String getToken(){

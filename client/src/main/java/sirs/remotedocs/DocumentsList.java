@@ -4,16 +4,22 @@
  */
 package sirs.remotedocs;
 
+import java.awt.Component;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.JList;
 
 import io.grpc.StatusRuntimeException;
 import sirs.remotedocs.grpc.Contract.CreateFileRequest;
 import sirs.remotedocs.grpc.Contract.CreateFileResponse;
-
+import sirs.remotedocs.grpc.Contract.UpdateFileNameRequest;
 /**
  *
  * @author tomaz
@@ -27,11 +33,60 @@ public class DocumentsList extends javax.swing.JFrame {
     public DocumentsList(ClientApp clientApp) {
         initComponents();
         this.clientApp = clientApp;
-        //TODO: Lembrar de dar disable dos botões quando não tiver permissão
+        myDocumentsList.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {  
+              if (myDocumentsList.getSelectedValue() != null) {
+                open_btn.setEnabled(true);
+                delete_btn.setEnabled(true);
+                share_btn.setEnabled(true);
+                sharedWithMeList.clearSelection();
+                rename_btn.setEnabled(true);
+               }
+            }
+           
+        });
+        sharedWithMeList.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {  
+              if (sharedWithMeList.getSelectedValue() != null) {
+                open_btn.setEnabled(true);
+                delete_btn.setEnabled(false);
+                share_btn.setEnabled(false);
+                myDocumentsList.clearSelection();
+                rename_btn.setEnabled(false);
+               }
+            }
+           
+        });
+        sharedWithMeList.setCellRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                Component renderer = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (renderer instanceof JLabel && value instanceof String) {
+                    // Here value will be of the Type 'String'
+                    ((JLabel) renderer).setText(((String) value).split("/")[1]);
+                }
+                return renderer;
+            }
+        });
+        myDocumentsList.setCellRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                Component renderer = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (renderer instanceof JLabel && value instanceof String) {
+                    // Here value will be of the Type 'String'
+                    ((JLabel) renderer).setText(((String) value).split("/")[1]);
+                }
+                return renderer;
+            }
+        });
     }
 
     public void setMyDocumentsList(String[] myDocs){
         myDocumentsList.setListData(myDocs);
+        
+        //TODO: disable all buttons except New when no file is selected
     }
     
     public void setSharedList(String[] sharedList){
@@ -198,24 +253,29 @@ public class DocumentsList extends javax.swing.JFrame {
     private void new_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_new_btnMouseClicked
         //TODO: verificar a opção do dialog
         String filename = JOptionPane.showInputDialog(this, "Insert filename: ");
-        CreateFileRequest createFileRequest = CreateFileRequest.newBuilder().setName(filename).setUsername(clientApp.getUsername()).setToken(clientApp.getToken()).build();
-        try {
-            CreateFileResponse createFileResponse = clientApp.getFrontend().createFile(createFileRequest);
-            int id = createFileResponse.getId();
-            LocalDateTime timestamp = Instant.ofEpochSecond(createFileResponse.getCreationTime().getSeconds()).atZone(ZoneId.systemDefault()).toLocalDateTime();
-            String username = clientApp.getUsername();
-            clientApp.addFile(new FileDetails(id,filename,0,timestamp,username,username));
-            setMyDocumentsList(clientApp.getMyDocs());
-            clientApp.getEditdoc().setLastUpdater(username);
-            clientApp.getEditdoc().setOwner(username);
-            clientApp.getEditdoc().setDateChange(timestamp);           
-            clientApp.switchForm(this, clientApp.getEditdoc());
+        if (filename != null){
+            CreateFileRequest createFileRequest = CreateFileRequest.newBuilder().setName(filename).setUsername(clientApp.getUsername()).setToken(clientApp.getToken()).build();
+            try {
+                CreateFileResponse createFileResponse = clientApp.getFrontend().createFile(createFileRequest);
+                int id = createFileResponse.getId();
+                LocalDateTime timestamp = Instant.ofEpochSecond(createFileResponse.getCreationTime().getSeconds()).atZone(ZoneId.systemDefault()).toLocalDateTime();
+                String username = clientApp.getUsername();
+                clientApp.addFile(new FileDetails(id,filename,0,timestamp,username,username));
+                setMyDocumentsList(clientApp.getMyDocs());
+                EditDocumentForm editDocForm = clientApp.getEditdoc();
+                editDocForm.setLastUpdater(username);
+                editDocForm.setOwner(username);
+                editDocForm.setDateChange(timestamp);   
+                editDocForm.setTitle(filename);       
+                clientApp.switchForm(this, editDocForm);
+            }
+            catch (StatusRuntimeException e) {
+                System.out.println("Caught exception with description: " +
+                e.getStatus().getDescription());
+                JOptionPane.showMessageDialog(null, e.getStatus().getDescription());
+            }
         }
-        catch (StatusRuntimeException e) {
-            System.out.println("Caught exception with description: " +
-            e.getStatus().getDescription());
-            JOptionPane.showMessageDialog(null, e.getStatus().getDescription());
-        }
+        
     }//GEN-LAST:event_new_btnMouseClicked
 
     private void open_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_open_btnMouseClicked
@@ -227,7 +287,27 @@ public class DocumentsList extends javax.swing.JFrame {
     }//GEN-LAST:event_logout_btnMouseClicked
 
     private void rename_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_rename_btnMouseClicked
-        // TODO add your handling code here:
+         //TODO: verificar a opção do dialog
+         String filename = JOptionPane.showInputDialog(this, "Insert a new filename: ");
+         if (filename!=null){
+            String selectedValue = myDocumentsList.getSelectedValue();
+            if (!selectedValue.isEmpty()) {
+               int id = Integer.parseInt(selectedValue.split("/")[0]);
+               UpdateFileNameRequest updateFileNameRequest = UpdateFileNameRequest.newBuilder().setId(id).setName(filename).setUsername(clientApp.getUsername()).setToken(clientApp.getToken()).build();
+               try {
+                  clientApp.getFrontend().updateFileName(updateFileNameRequest);
+                  clientApp.updateFileName(id, filename);
+                  setMyDocumentsList(clientApp.getMyDocs());
+               }
+               catch (StatusRuntimeException e) {
+                   System.out.println("Caught exception with description: " +
+                   e.getStatus().getDescription());
+                   JOptionPane.showMessageDialog(null, e.getStatus().getDescription());
+               }
+            }
+         }
+        
+       
     }//GEN-LAST:event_rename_btnMouseClicked
 
     private void share_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_share_btnMouseClicked
@@ -239,12 +319,7 @@ public class DocumentsList extends javax.swing.JFrame {
         clientApp.getFrontend().channelEnd();
         System.exit(0);   
      }//GEN-LAST:event_formWindowClosing
-   /* myDocumentsList.addListSelectionListener(//PQPPPPPPPP () {
-        open_btn.setEnabled(true);
-        delete_btn.setEnabled(true);
-        share_btn.clearSelection();
-        rename_btn.setEnabled(true);
-    });*/
+    
     
     //fazer outro listerner para os shareddocs
 
