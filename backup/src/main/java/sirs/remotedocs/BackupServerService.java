@@ -15,6 +15,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import java.security.*;
 
+import static io.grpc.Status.ABORTED;
 import static io.grpc.Status.INVALID_ARGUMENT;
 
 public class BackupServerService extends RemoteDocsBackupGrpc.RemoteDocsBackupImplBase {
@@ -33,7 +34,7 @@ public class BackupServerService extends RemoteDocsBackupGrpc.RemoteDocsBackupIm
             responseObserver.onNext(response);
             responseObserver.onCompleted();
         } catch (BackupServerException e) {
-            responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
+            responseObserver.onError(ABORTED.withDescription(e.getMessage()).asRuntimeException());
         }
     }
 
@@ -77,7 +78,7 @@ public class BackupServerService extends RemoteDocsBackupGrpc.RemoteDocsBackupIm
         } catch (BackupServerException | NoSuchPaddingException | IllegalBlockSizeException | NoSuchAlgorithmException
                 | BadPaddingException | InvalidKeyException | InvalidProtocolBufferException
                 | InvalidAlgorithmParameterException | SignatureException e) {
-            responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
+            responseObserver.onError(ABORTED.withDescription(e.getMessage()).asRuntimeException());
         }
     }
 
