@@ -21,16 +21,15 @@ message FilesResponse {
 message HandshakeRequest {
     bytes secretKey = 1;
     bytes initializationVector = 2;
-    bytes nonce = 3;
-    bytes signature = 4;
+    int32 nonce = 3;
 }
 
 message HandshakeResponse {
-    bytes nonce = 1;
+    int32 nonce = 1;
 }
 
 message PublicKeyRequest {
-    // No arguments.
+    bytes publicKey = 1;
 }
 
 message PublicKeyResponse {
@@ -49,6 +48,6 @@ message EncryptedResponse {
 
 service RemoteDocsBackup {
     rpc BackupServerFiles(EncryptedRequest) returns (EncryptedResponse);
-    rpc Handshake(HandshakeRequest) returns (HandshakeResponse);
+    rpc Handshake(EncryptedRequest) returns (EncryptedResponse);
     rpc GetPublicKey(PublicKeyRequest) returns (PublicKeyResponse);
 }

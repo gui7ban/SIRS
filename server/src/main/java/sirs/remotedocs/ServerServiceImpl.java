@@ -19,7 +19,6 @@ public class ServerServiceImpl extends RemoteDocsGrpc.RemoteDocsImplBase
 {
 	private final Server server = new Server();
 
-
 	@Override
 	public void ping(PingRequest request, StreamObserver<PingResponse> responseObserver) {
 			PingResponse response = PingResponse.newBuilder().

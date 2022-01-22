@@ -21,20 +21,9 @@ public class AsymmetricCryptoOperations {
         return keyPairGenerator.generateKeyPair();
     }
 
-    public static PublicKey getPublicKeyFromString(String key)
-            throws NoSuchAlgorithmException, InvalidKeySpecException {
-        byte[] byteKey = Base64.getDecoder().decode(key);
-        X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(byteKey);
+    public static PublicKey getPublicKeyFromBytes(byte[] key) throws NoSuchAlgorithmException, InvalidKeySpecException {
         KeyFactory keyFactory = KeyFactory.getInstance(ENCRYPTION_ALGORITHM);
-        return keyFactory.generatePublic(publicKeySpec);
-    }
-
-    public static PrivateKey getPrivateKeyFromString(String key)
-            throws NoSuchAlgorithmException, InvalidKeySpecException {
-        byte[] byteKey = Base64.getDecoder().decode(key);
-        PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(byteKey);
-        KeyFactory keyFactory = KeyFactory.getInstance(ENCRYPTION_ALGORITHM);
-        return keyFactory.generatePrivate(privateKeySpec);
+        return keyFactory.generatePublic(new X509EncodedKeySpec(key));
     }
 
     public static byte[] encrypt(byte[] content, Key key)
