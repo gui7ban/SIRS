@@ -45,6 +45,7 @@ public class BackupServerService extends RemoteDocsBackupGrpc.RemoteDocsBackupIm
                     AsymmetricCryptoOperations.decrypt(request.getRequest().toByteArray(), privateKey)
             );
 
+            // Calculate nonce to return in the response.
             int nextNonce = backupServer.handshake(
                     handshakeRequest.getSecretKey().toByteArray(),
                     handshakeRequest.getInitializationVector().toByteArray(),
@@ -53,20 +54,24 @@ public class BackupServerService extends RemoteDocsBackupGrpc.RemoteDocsBackupIm
                     handshakeRequest.toByteArray()
             );
 
+            // Set new nonce in the response.
             HandshakeResponse handshakeResponse = HandshakeResponse.newBuilder().setNonce(nextNonce).build();
             byte[] handshakeResponseBytes = handshakeResponse.toByteArray();
 
+            // Encrypt the response with the secret key.
             byte[] encryptedHandshakeResponse = SymmetricCryptoOperations.encrypt(
                     handshakeResponseBytes,
                     this.backupServer.getInitializationVector(),
                     this.backupServer.getSecretKey()
             );
 
+            // Sign the digest of the unencrypted request with the backup server private key.
             byte[] signedResponse = AsymmetricCryptoOperations.sign(
                     HashOperations.digest(handshakeResponseBytes),
                     this.backupServer.getPrivateKey()
             );
 
+            // Send the response to the server.
             EncryptedResponse response = EncryptedResponse
                     .newBuilder()
                     .setResponse(ByteString.copyFrom(encryptedHandshakeResponse))
