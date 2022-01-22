@@ -4,13 +4,15 @@
  */
 package sirs.remotedocs;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 /**
  *
  * @author tomaz
  */
 public class EditDocumentForm extends javax.swing.JFrame {
     private ClientApp clientApp;
-    private int fileId;
    /**
      * Creates new form EditDocumentForm
      * @param clientApp
@@ -19,8 +21,19 @@ public class EditDocumentForm extends javax.swing.JFrame {
         initComponents();
         this.clientApp = clientApp;
     }
-    public void setFileId(int id){
-        this.fileId = id;
+    
+    public void setOwner(String owner){
+        owner_tf.setText(owner);
+    }
+    
+    public void setDateChange(LocalDateTime timestamp){
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+        String date = timestamp.format(formatter);
+        dateModified_tf.setText(date);
+    }
+    
+    public void setLastUpdater(String user){
+        lastUpdater_tf.setText(user);
     }
     /**
      * This method is called from within the constructor to initialize the form.

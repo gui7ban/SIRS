@@ -37,6 +37,8 @@ public class DocumentsList extends javax.swing.JFrame {
     public void setSharedList(String[] sharedList){
         sharedWithMeList.setListData(sharedList);
     }
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -200,11 +202,13 @@ public class DocumentsList extends javax.swing.JFrame {
         try {
             CreateFileResponse createFileResponse = clientApp.getFrontend().createFile(createFileRequest);
             int id = createFileResponse.getId();
-            clientApp.getEditdoc().setFileId(id);
             LocalDateTime timestamp = Instant.ofEpochSecond(createFileResponse.getCreationTime().getSeconds()).atZone(ZoneId.systemDefault()).toLocalDateTime();
             String username = clientApp.getUsername();
             clientApp.addFile(new FileDetails(id,filename,0,timestamp,username,username));
             setMyDocumentsList(clientApp.getMyDocs());
+            clientApp.getEditdoc().setLastUpdater(username);
+            clientApp.getEditdoc().setOwner(username);
+            clientApp.getEditdoc().setDateChange(timestamp);           
             clientApp.switchForm(this, clientApp.getEditdoc());
         }
         catch (StatusRuntimeException e) {
@@ -235,7 +239,17 @@ public class DocumentsList extends javax.swing.JFrame {
         clientApp.getFrontend().channelEnd();
         System.exit(0);   
      }//GEN-LAST:event_formWindowClosing
+   /* myDocumentsList.addListSelectionListener(//PQPPPPPPPP () {
+        open_btn.setEnabled(true);
+        delete_btn.setEnabled(true);
+        share_btn.clearSelection();
+        rename_btn.setEnabled(true);
+    });*/
+    
+    //fazer outro listerner para os shareddocs
 
+    //.getSelectedValue() ----> devolve valor selecionado na lista
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton delete_btn;
     private javax.swing.JLabel jLabel3;
