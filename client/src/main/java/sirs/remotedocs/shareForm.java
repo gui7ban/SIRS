@@ -19,6 +19,7 @@ public class ShareForm extends javax.swing.JFrame {
     public ShareForm(ClientApp clientApp) {
         initComponents();
         this.clientApp = clientApp;
+        
     }
 
     /**
@@ -57,6 +58,11 @@ public class ShareForm extends javax.swing.JFrame {
 
         manage_btn.setBackground(new java.awt.Color(255, 255, 204));
         manage_btn.setText("Manage");
+        manage_btn.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                manage_btnMouseClicked(evt);
+            }
+        });
 
         back_btn.setBackground(new java.awt.Color(255, 255, 204));
         back_btn.setText("Back");
@@ -143,6 +149,10 @@ public class ShareForm extends javax.swing.JFrame {
             //TODO : share com username
         }
     }//GEN-LAST:event_add_btnMouseClicked
+
+    private void manage_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_manage_btnMouseClicked
+        
+    }//GEN-LAST:event_manage_btnMouseClicked
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
