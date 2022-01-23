@@ -11,10 +11,12 @@ message FileInfo {
 
 message FilesRequest {
     repeated FileInfo files = 1;
+    int32 nonce = 2;
 }
 
 message FilesResponse {
     repeated FileInfo files = 1;
+    int32 nonce = 2;
 }
 
 

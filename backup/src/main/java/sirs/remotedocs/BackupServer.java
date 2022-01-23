@@ -5,6 +5,7 @@ import sirs.remotedocs.crypto.SymmetricCryptoOperations;
 import sirs.remotedocs.exceptions.BackupServerException;
 
 import javax.crypto.SecretKey;
+import java.io.File;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
@@ -12,6 +13,7 @@ import java.util.Map;
 
 public class BackupServer {
 
+    private static final String FILES_DIR = "files/";
     private KeyPair keyPair;
     private SecretKey secretKey;
     private PublicKey serverPublicKey;
@@ -20,6 +22,9 @@ public class BackupServer {
 
     public BackupServer() {
         try {
+            File f = new File(FILES_DIR);
+            if(!f.mkdir())
+                System.out.println("Error creating files directory.");
             this.keyPair = AsymmetricCryptoOperations.generateKeyPair();
         } catch (NoSuchAlgorithmException e) {
             System.out.println("Failed to generate key pair for backup server.");
