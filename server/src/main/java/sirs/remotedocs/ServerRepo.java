@@ -227,4 +227,44 @@ public class ServerRepo {
         statement.setInt(1, id);
         statement.executeUpdate();
     }
+
+    public List<User> getUsersExceptOwnerOfDoc(int id) throws SQLException{
+        String query = "SELECT userId,permission FROM remotedocs_permissions WHERE fileId = ? and permission > 0";
+        ArrayList<User> listOfUsers = new ArrayList<>();
+        Connection connection = this.newConnection();
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setInt(1, id);
+
+        ResultSet resultSet = statement.executeQuery();
+        while(resultSet.next()){
+            String username = resultSet.getString("userId");
+            int permission = resultSet.getInt("permission");         
+            listOfUsers.add(new User(username, permission));
+        }
+
+        return listOfUsers;
+    }
+
+    public void updatePermission(String username, int id, int permission) throws SQLException {
+        String query = "UPDATE remotedocs_permissions SET permission=? WHERE fileId=? AND userId=?";
+
+        Connection connection = this.newConnection();
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setInt(1, permission);
+        statement.setInt(2, id);
+        statement.setString(3, username);
+        statement.executeUpdate();
+    }
+
+    public void addPermission(String username, int id, int permission) throws SQLException {
+        String query = "INSERT INTO remotedocs_permissions (userId, fileId, permission, sharedKey) VALUES (?, ?, ?, ?)";
+
+        Connection connection = this.newConnection();
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setString(1, username);
+        statement.setInt(2, id);
+        statement.setInt(3, permission);
+        statement.setString(4, ""); // TODO: Add encrypted shared key.
+        statement.executeUpdate();
+    }
 }

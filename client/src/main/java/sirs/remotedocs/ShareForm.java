@@ -4,7 +4,19 @@
  */
 package sirs.remotedocs;
 
+import java.util.List;
+
+import java.awt.Component;
+
+import javax.swing.JList;
+
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.DefaultListModel;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+
+import io.grpc.StatusRuntimeException;
+import sirs.remotedocs.grpc.Contract.*;
 
 /**
  *
@@ -12,14 +24,42 @@ import javax.swing.JOptionPane;
  */
 public class ShareForm extends javax.swing.JFrame {
     private ClientApp clientApp;
+    private int id;
     /**
      * Creates new form shareForm
      * @param clientApp
+     * @param id
      */
     public ShareForm(ClientApp clientApp) {
         initComponents();
         this.clientApp = clientApp;
+        sharedWithList.setCellRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                Component renderer = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (renderer instanceof JLabel && value instanceof String) {
+                    // Here value will be of the Type 'String'
+                    ((JLabel) renderer).setText(((String) value).split("/")[1]);
+                }
+                return renderer;
+            }
+        });
         
+    }
+
+    public void setUsersList(List<String> users){
+        //sharedWithList.setListData(users);
+        DefaultListModel<String> model = (DefaultListModel<String>)sharedWithList.getModel();
+        model.clear();
+        model.addAll(users);
+    }
+
+    public void setFileNameTf(String filename){
+        filename_tf.setText(filename);
+    }
+
+    public void setId(int id){
+        this.id = id;
     }
 
     /**
@@ -33,7 +73,7 @@ public class ShareForm extends javax.swing.JFrame {
 
         jPanel1 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        sharedWithList = new javax.swing.JList<>();
+        sharedWithList = new javax.swing.JList<>(new DefaultListModel<String>());
         jLabel1 = new javax.swing.JLabel();
         filename_tf = new javax.swing.JTextField();
         manage_btn = new javax.swing.JButton();
@@ -144,14 +184,87 @@ public class ShareForm extends javax.swing.JFrame {
     }//GEN-LAST:event_back_btnMouseClicked
 
     private void add_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_add_btnMouseClicked
-        String username = JOptionPane.showInputDialog(this, "Insert username: ");
+        String[] result = new CustomDialog(this).run();
+        String username = result[0];
+        String permission = result[1];
+        int newPermission;
         if (username != null){
+            if (permission.equals("editor"))
+                newPermission = 2;
+            else   
+                newPermission = 1;
+            AddPermissionUserRequest request = AddPermissionUserRequest.newBuilder()
+            .setOwner(clientApp.getUsername())
+            .setId(this.id)
+            .setPermission(newPermission)
+            .setUsername(username)
+            .setToken(clientApp.getToken()).build();
+            try {
+                clientApp.getFrontend().addPermission(request);
+                DefaultListModel<String> model = (DefaultListModel<String>)sharedWithList.getModel();                
+                model.addElement(newPermission+"/"+username);
+            
+            }catch (StatusRuntimeException e) {
+                System.out.println("Caught exception with description: " +
+                e.getStatus().getDescription());
+                JOptionPane.showMessageDialog(null, e.getStatus().getDescription());
+            }
             //TODO : share com username
         }
     }//GEN-LAST:event_add_btnMouseClicked
 
     private void manage_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_manage_btnMouseClicked
-        
+        String selectedValue = sharedWithList.getSelectedValue();
+        int index = sharedWithList.getSelectedIndex();
+        if (!selectedValue.isEmpty()) {
+            String[] split = selectedValue.split("/");
+            int permission = Integer.parseInt(split[0]);
+            String username = split[1];
+            String permissionInText;
+            if(permission == 1)
+                permissionInText = "viewer";
+            else
+                permissionInText = "editor";
+            Object[] possibilities = {"editor", "viewer"};
+
+            String s = (String)JOptionPane.showInputDialog(this,
+            "Choose Permissions:",
+            "Manage Permissions",
+            JOptionPane.PLAIN_MESSAGE,
+            null,
+            possibilities,
+            permissionInText);
+            if ((s != null) && (s.length() > 0)) {
+                int newPermission;
+                if (s.equals("editor"))
+                    newPermission = 2;
+                else   
+                    newPermission = 1;
+                if(permission != newPermission)
+                {
+                    UpdatePermissionUserRequest request = UpdatePermissionUserRequest.newBuilder()
+                    .setOwner(clientApp.getUsername())
+                    .setId(this.id)
+                    .setPermission(newPermission)
+                    .setUsername(username)
+                    .setToken(clientApp.getToken()).build();
+                    try {
+                       clientApp.getFrontend().updatePermission(request);
+                       DefaultListModel<String> model = (DefaultListModel<String>)sharedWithList.getModel();                
+                        model.setElementAt(newPermission+"/"+username, index);
+                    
+                    }catch (StatusRuntimeException e) {
+                        System.out.println("Caught exception with description: " +
+                        e.getStatus().getDescription());
+                        JOptionPane.showMessageDialog(null, e.getStatus().getDescription());
+                    }
+
+                    
+                }
+            }
+
+        }
+
     }//GEN-LAST:event_manage_btnMouseClicked
 
 

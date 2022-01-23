@@ -112,6 +112,47 @@ message LogoutResponse {
     
 }
 
+message SharedDocUsersRequest {
+    string token = 1;
+    string username = 2;
+    int32 id = 3;
+}
+
+message SharedDocUsersResponse {
+    repeated UserGrpc users = 1;
+}
+
+message UserGrpc {
+    string username = 1;
+    int32 permission = 2;
+}
+
+message UpdatePermissionUserRequest {
+    string owner = 1;
+    string token = 2;
+    string username = 3;
+    int32 permission = 4;
+    int32 id = 5;
+
+}
+
+message UpdatePermissionUserResponse {
+
+}
+
+message AddPermissionUserRequest {
+    string owner = 1;
+    string token = 2;
+    string username = 3;
+    int32 permission = 4;
+    int32 id = 5;
+}
+
+message AddPermissionUserResponse {
+  
+}
+
+
 service RemoteDocs {
 	rpc Ping(PingRequest) returns (PingResponse);
 	rpc Login(LoginRequest) returns (LoginResponse);
@@ -123,4 +164,8 @@ service RemoteDocs {
     rpc GetDocumentsList(GetDocumentsRequest) returns (GetDocumentsResponse);
     rpc DeleteFile(DeleteFileRequest) returns (DeleteFileResponse);
     rpc Logout(LogoutRequest) returns (LogoutResponse); 
+    rpc DocUsersList(SharedDocUsersRequest) returns (SharedDocUsersResponse);
+    rpc UpdatePermission(UpdatePermissionUserRequest) returns (UpdatePermissionUserResponse);
+    rpc AddPermission(AddPermissionUserRequest) returns (AddPermissionUserResponse);
+
 }

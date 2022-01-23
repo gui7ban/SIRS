@@ -47,6 +47,12 @@ public class ServerFrontend {
     
     public LogoutResponse logout(LogoutRequest request) { return stub.logout(request); }
 
+    public SharedDocUsersResponse docUsersList(SharedDocUsersRequest request){ return stub.docUsersList(request); }
+    
+    public UpdatePermissionUserResponse updatePermission(UpdatePermissionUserRequest request){ return stub.updatePermission(request); }
+    
+    public AddPermissionUserResponse addPermission(AddPermissionUserRequest request){ return stub.addPermission(request); }
+    
     public void channelEnd() {
         channel.shutdownNow();
     }

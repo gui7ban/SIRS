@@ -8,6 +8,7 @@ import java.awt.Component;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -268,6 +269,7 @@ public class DocumentsList extends javax.swing.JFrame {
                clientApp.getFrontend().deleteFile(deleteFileRequest);
                clientApp.deleteFile(id);
                setMyDocumentsList(clientApp.getMyDocs());
+               disableButtons();
             }
             catch (StatusRuntimeException e) {
                 System.out.println("Caught exception with description: " +
@@ -333,7 +335,11 @@ public class DocumentsList extends javax.swing.JFrame {
                 editDocForm.setLastUpdater(downloadResponse.getLastUpdater());
                 editDocForm.setOwner(downloadResponse.getOwner());
                 editDocForm.setDateChange(timestamp);   
-                editDocForm.setTitle(details.getName());   
+                editDocForm.setTitle(details.getName());  
+                if(details.getPermission() == 1)
+                    editDocForm.setViewerLayout(); 
+                else
+                    editDocForm.setDefaultLayout();
                 clientApp.switchForm(this, editDocForm);
             }
             catch (StatusRuntimeException e) {
@@ -392,6 +398,7 @@ public class DocumentsList extends javax.swing.JFrame {
          String filename = JOptionPane.showInputDialog(this, "Insert a new filename: ");
          if (filename!=null){
             String selectedValue = myDocumentsList.getSelectedValue();
+            int index = myDocumentsList.getSelectedIndex();
             if (!selectedValue.isEmpty()) {
                int id = Integer.parseInt(selectedValue.split("/")[0]);
                UpdateFileNameRequest updateFileNameRequest = UpdateFileNameRequest.newBuilder().setId(id).setName(filename).setUsername(clientApp.getUsername()).setToken(clientApp.getToken()).build();
@@ -399,6 +406,7 @@ public class DocumentsList extends javax.swing.JFrame {
                   clientApp.getFrontend().updateFileName(updateFileNameRequest);
                   clientApp.updateFileName(id, filename);
                   setMyDocumentsList(clientApp.getMyDocs());
+                  myDocumentsList.setSelectedIndex(index);
                }
                catch (StatusRuntimeException e) {
                    System.out.println("Caught exception with description: " +
@@ -412,7 +420,35 @@ public class DocumentsList extends javax.swing.JFrame {
     }//GEN-LAST:event_rename_btnMouseClicked
 
     private void share_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_share_btnMouseClicked
-        // TODO add your handling code here:
+        String selectedValue = myDocumentsList.getSelectedValue();
+        if (!selectedValue.isEmpty()) {
+            int id = Integer.parseInt(selectedValue.split("/")[0]);
+            SharedDocUsersRequest request = SharedDocUsersRequest.newBuilder()
+            .setUsername(clientApp.getUsername())
+            .setId(id)
+            .setToken(clientApp.getToken()).build();
+            try{
+                SharedDocUsersResponse response = clientApp.getFrontend().docUsersList(request);
+                List<UserGrpc> listGrpc = response.getUsersList();
+                ArrayList<String> users = new ArrayList<>();
+                for (UserGrpc userGrpc: listGrpc){
+                    users.add(userGrpc.getPermission()+"/"+userGrpc.getUsername());
+                }
+                ShareForm shareForm = clientApp.getShare();
+                shareForm.setUsersList(users);
+                String filename = clientApp.getFile(id).getName();
+                shareForm.setFileNameTf(filename);
+                shareForm.setId(id);
+                clientApp.switchForm(this, shareForm);
+
+            }catch (StatusRuntimeException e) {
+                System.out.println("Caught exception with description: " +
+                e.getStatus().getDescription());
+                JOptionPane.showMessageDialog(null, e.getStatus().getDescription());
+            }
+        }
+               
+        
     }//GEN-LAST:event_share_btnMouseClicked
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
@@ -422,9 +458,7 @@ public class DocumentsList extends javax.swing.JFrame {
      }//GEN-LAST:event_formWindowClosing
     
     
-    //fazer outro listerner para os shareddocs
 
-    //.getSelectedValue() ----> devolve valor selecionado na lista
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton delete_btn;

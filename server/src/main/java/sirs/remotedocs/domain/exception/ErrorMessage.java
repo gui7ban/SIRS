@@ -12,9 +12,12 @@ public enum ErrorMessage {
     FILE_NAME_EMPTY("The name of the file cannot be empty."),
     UNAUTHORIZED_ACCESS("You do not have enough permissions to access this file."),
     UNAUTHORIZED_WRITE("You do not have enough permissions to edit this file."),
+    UNAUTHORIZED_FILE_LIST_ACCESS("Only the owner can access shared list of this file."),
     UNAUTHORIZED_FILENAME_CHANGE("You do not have enough permissions to change this file's name."),
+    UNAUTHORIZED_FILE_PERMISSIONS("Only the owner can modify permissions of this file."),
     UNAUTHORIZED_FILE_DELETION("You do not have enough permissions to delete this file."),
-    USER_ALREADY_EXISTS("The chosen username is not valid, please try another username.");
+    USER_ALREADY_EXISTS("The chosen username is not valid, please try another username."), 
+    USER_DOESNT_EXIST("This username do not exist, please try another one.");
 
     public final String label;
 

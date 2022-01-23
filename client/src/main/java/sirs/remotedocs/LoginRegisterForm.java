@@ -234,7 +234,7 @@ public class LoginRegisterForm extends javax.swing.JFrame {
                 for (DocumentInfo docGrpc: listGrpc){
                     listDocs.put(docGrpc.getId(), new FileDetails(docGrpc.getId(), docGrpc.getName(), docGrpc.getRelationship()));
                 }
-
+                
                 clientApp.setFiles(listDocs);
                 clientApp.setUsername(username);
                 clientApp.setToken(loginResponse.getToken());

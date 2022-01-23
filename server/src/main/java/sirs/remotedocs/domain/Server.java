@@ -212,6 +212,61 @@ public class Server {
 		}
 	}
 
+	public List<User> getNotOwnerUsersOfDoc(int id, String username, String token) throws RemoteDocsException {
+		if (!this.isSessionValid(username, token))
+			throw new RemoteDocsException(ErrorMessage.INVALID_SESSION);
+		try {
+			int permission = this.serverRepo.getFilePermission(id, username);
+			if (permission == -1)
+				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_ACCESS);
+			else if (permission != 0)
+				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_FILE_LIST_ACCESS);
+			
+			return this.serverRepo.getUsersExceptOwnerOfDoc(id);
+		} catch (SQLException e) {
+			this.logger.log(e.getMessage());
+			throw new RemoteDocsException(ErrorMessage.INTERNAL_ERROR);
+		}
+	}
+
+	public void updatePermission(String owner, String token, String username, int id, int permission) throws RemoteDocsException {
+		if (!this.isSessionValid(owner, token))
+			throw new RemoteDocsException(ErrorMessage.INVALID_SESSION);
+		try {
+			int permissionOfOwner = this.serverRepo.getFilePermission(id, owner);
+			if (permissionOfOwner == -1)
+				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_ACCESS);
+			else if (permissionOfOwner != 0)
+				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_FILE_PERMISSIONS);
+			this.serverRepo.updatePermission(username, id, permission);
+		} catch (SQLException e) {
+			this.logger.log(e.getMessage());
+			throw new RemoteDocsException(ErrorMessage.INTERNAL_ERROR);
+		}
+	}
+
+	public void addPermission(String owner, String token, String username, int id, int permission) throws RemoteDocsException {
+		if (!this.isSessionValid(owner, token))
+			throw new RemoteDocsException(ErrorMessage.INVALID_SESSION);
+		try {
+			int permissionOfOwner = this.serverRepo.getFilePermission(id, owner);
+			if (permissionOfOwner == -1)
+				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_ACCESS);
+			else if (permissionOfOwner != 0)
+				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_FILE_PERMISSIONS);
+			User user = this.serverRepo.getUser(username);
+			if (user == null)
+				throw new RemoteDocsException(ErrorMessage.USER_DOESNT_EXIST);
+			this.serverRepo.addPermission(username, id, permission);
+		} catch (SQLException e) {
+			this.logger.log(e.getMessage());
+			throw new RemoteDocsException(ErrorMessage.INTERNAL_ERROR);
+		}
+	}
+
+
+
+
 	// TODO: Share file permissions.
 
 	public synchronized String ping() {

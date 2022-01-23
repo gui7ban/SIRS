@@ -28,6 +28,7 @@ public class FileDetails {
         this.time_change = time_change;
     }
     
+
     public FileDetails(String sharedKey, int permission) {
         this.sharedKey = sharedKey;
         this.permission = permission;

@@ -54,6 +54,16 @@ public class EditDocumentForm extends javax.swing.JFrame {
     public void setLastUpdater(String user){
         lastUpdater_tf.setText(user);
     }
+    public void setViewerLayout(){
+        editorPane.setEnabled(false);
+        save_btn.setVisible(false);
+        cancel_btn.setText("Back");
+    }
+    public void setDefaultLayout(){
+        editorPane.setEnabled(true);
+        save_btn.setVisible(true);
+        cancel_btn.setText("Cancel");
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
