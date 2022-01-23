@@ -32,7 +32,7 @@ public class ServerApp {
 			Server server = ServerBuilder
 					.forPort(port)
 					.addService(serverService)
-					// .useTransportSecurity(new File(CERTIFICATE_CHAIN_FILE), new File(CERTIFICATE_PRIVATE_KEY_FILE))
+					.useTransportSecurity(new File(CERTIFICATE_CHAIN_FILE), new File(CERTIFICATE_PRIVATE_KEY_FILE))
 					.build()
 					.start();
 
