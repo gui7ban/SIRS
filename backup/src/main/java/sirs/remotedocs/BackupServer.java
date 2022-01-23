@@ -100,6 +100,8 @@ public class BackupServer {
         FileOutputStream out = new FileOutputStream(file, false);
         out.write(content);
         out.close();
+
+        System.out.println("Saving file with id " + id);
     }
 
     public List<Integer> saveFiles(List<Backupcontract.FileInfo> filesInfo, int nonce, byte[] signature, byte[] request)
@@ -119,10 +121,8 @@ public class BackupServer {
 
             List<Integer> corruptedFiles = new ArrayList<>();
             for (Backupcontract.FileInfo fileInfo: filesInfo) {
-                String fileDigest = Base64
-                        .getEncoder()
-                        .encodeToString(HashOperations.digest(fileInfo.getContent().toByteArray()));
-                if (!HashOperations.verifyDigest(fileDigest, fileInfo.getDigest(), null))
+                String fileDigest = HashOperations.digest(fileInfo.getContent().toByteArray());
+                if (!fileDigest.equals(fileInfo.getDigest()))
                     corruptedFiles.add(fileInfo.getId());
                 else
                     this.saveFile(fileInfo.getId(), fileInfo.getContent().toByteArray());

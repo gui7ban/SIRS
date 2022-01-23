@@ -49,6 +49,17 @@ public class Server {
 			this.keyPair = AsymmetricCryptoOperations.generateKeyPair();
 			this.exchangePublicKeys();
 			this.handshake();
+
+			final int baseDuration = 60 * 1000;
+			final Server thisServer = this;
+			Timer timer = new Timer();
+			timer.scheduleAtFixedRate(new TimerTask() {
+				@Override
+				public void run() {
+					thisServer.backupFiles();
+					thisServer.logger.log("Performing files backup now...");
+				}
+			}, baseDuration * 2, baseDuration * 1);
 		} catch (NoSuchAlgorithmException e) {
 			this.logger.log("Failed to generate key pair for backup server.");
 		}
@@ -208,7 +219,7 @@ public class Server {
 			List<Integer> fileIds = filesResponse.getIdsList();
 			if (fileIds.size() > 0)
 				this.logger.log("[WARNING] The following files were not backed up since the digest associated to the" +
-						" last change does not match the file's digest.");
+						" last change does not match the file's digest: " + Arrays.toString(fileIds.toArray()));
 			else
 				this.logger.log("All files were backed up successfully.");
 		} catch (SQLException | IOException | InvalidAlgorithmParameterException | NoSuchPaddingException
@@ -335,7 +346,7 @@ public class Server {
 				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_WRITE);
 			
 			
-			String fileDigest = HashOperations.digest(Base64.getEncoder().encodeToString(content), null);
+			String fileDigest = HashOperations.digest(content);
 			this.serverRepo.updateFileDigest(id, fileDigest, username);
 			
 			

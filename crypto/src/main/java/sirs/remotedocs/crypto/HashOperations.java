@@ -18,9 +18,9 @@ public class HashOperations {
         return Base64.getEncoder().encodeToString(md.digest(message.getBytes()));
     }
 
-    public static byte[] digest(byte[] content) throws NoSuchAlgorithmException {
+    public static String digest(byte[] content) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance(HASH_ALGORITHM);
-        return md.digest(content);
+        return Base64.getEncoder().encodeToString(md.digest(content));
     }
 
     public static boolean verifyDigest(String message, String digest, byte[] salt) throws NoSuchAlgorithmException {

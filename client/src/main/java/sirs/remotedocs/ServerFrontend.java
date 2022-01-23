@@ -22,7 +22,8 @@ public class ServerFrontend {
         debug("Target:" + target);
         channel = ManagedChannelBuilder
                 .forTarget(target)
-                .useTransportSecurity()
+               // .useTransportSecurity()
+                .usePlaintext()
                 .build();
         stub = RemoteDocsGrpc.newBlockingStub(channel);
     }
