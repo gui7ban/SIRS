@@ -26,9 +26,9 @@ import java.util.*;
 public class Server {
 
 	private static final String FILES_DIR = "files/";
-	private ServerRepo serverRepo = new ServerRepo();
-	private Logger logger = new Logger("Server", "Core");
-	private Map<String, String> accessTokens = new TreeMap<>();
+	private final ServerRepo serverRepo = new ServerRepo();
+	private final Logger logger = new Logger("Server", "Core");
+	private final Map<String, String> accessTokens = new TreeMap<>();
 	private KeyPair keyPair;
 
 	// Backup Server classes and data
@@ -37,7 +37,6 @@ public class Server {
 	private PublicKey backupServerPublicKey;
 	private SecretKey backupServerSecretKey;
 	private IvParameterSpec backupServerIV;
-	private final Map<Integer, Boolean> nonces = new HashMap<>();
 	private int currentNonce;
 
 	public Server(String backupServerPath) {
