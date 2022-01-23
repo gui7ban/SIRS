@@ -18,7 +18,11 @@ import java.util.List;
 
 public class ServerServiceImpl extends RemoteDocsGrpc.RemoteDocsImplBase
 {
-	private final Server server = new Server();
+	private final Server server;
+
+	public ServerServiceImpl(String backupServerPath) {
+		this.server = new Server(backupServerPath);
+	}
 
 	@Override
 	public void ping(PingRequest request, StreamObserver<PingResponse> responseObserver) {

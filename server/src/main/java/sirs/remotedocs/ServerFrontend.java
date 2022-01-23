@@ -12,10 +12,9 @@ public class ServerFrontend {
     private RemoteDocsBackupGrpc.RemoteDocsBackupBlockingStub stub;
     private final ManagedChannel channel;
 
-    public ServerFrontend(String host, int port) {
-        final String target = host + ":" + port;
+    public ServerFrontend(String path) {
         this.channel = ManagedChannelBuilder
-                .forTarget(target)
+                .forTarget(path)
                 .build();
         this.stub = RemoteDocsBackupGrpc.newBlockingStub(this.channel);
     }

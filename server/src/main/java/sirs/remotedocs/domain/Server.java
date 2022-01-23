@@ -1,18 +1,22 @@
 package sirs.remotedocs.domain;
 
+import com.google.protobuf.ByteString;
 import sirs.remotedocs.Logger;
+import sirs.remotedocs.ServerFrontend;
 import sirs.remotedocs.ServerRepo;
+import sirs.remotedocs.backupgrpc.Backupcontract.*;
+import sirs.remotedocs.crypto.AsymmetricCryptoOperations;
 import sirs.remotedocs.crypto.HashOperations;
 import sirs.remotedocs.domain.exception.ErrorMessage;
 import sirs.remotedocs.domain.exception.RemoteDocsException;
 
 import java.io.*;
+import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
 import java.sql.SQLException;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 public class Server {
 
@@ -20,12 +24,45 @@ public class Server {
 	private ServerRepo serverRepo = new ServerRepo();
 	private Logger logger = new Logger("Server", "Core");
 	private Map<String, String> accessTokens = new TreeMap<>();
+	private KeyPair keyPair;
 
-	public Server(){
-		File f = new File(FILES_DIR);
-		f.mkdir();
+	// Backup Server classes and data
+	private final ServerFrontend serverFrontend;
+	private PublicKey backupServerPublicKey;
+	private final Map<Integer, Boolean> nonces = new HashMap<>();
+
+	public Server(String backupServerPath) {
+		this.serverFrontend = new ServerFrontend(backupServerPath);
+
+		try {
+			File f = new File(FILES_DIR);
+			if(!f.mkdir())
+				this.logger.log("Error creating files directory.");
+			this.keyPair = AsymmetricCryptoOperations.generateKeyPair();
+			this.exchangePublicKeys();
+		} catch (NoSuchAlgorithmException e) {
+			this.logger.log("Failed to generate key pair for backup server.");
+		}
 	}
 
+	// Backup Server Methods
+	public void exchangePublicKeys() {
+		PublicKeyRequest request = PublicKeyRequest
+				.newBuilder()
+				.setPublicKey(ByteString.copyFrom(this.keyPair.getPublic().getEncoded()))
+				.build();
+
+		PublicKeyResponse response = this.serverFrontend.getBackupServerPublicKey(request);
+		try {
+			this.backupServerPublicKey = AsymmetricCryptoOperations.getPublicKeyFromBytes(
+					response.getKey().toByteArray()
+			);
+		} catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+			this.logger.log(e.getMessage());
+		}
+	}
+
+	// Server Methods
 	public String login(String name, String password) throws RemoteDocsException {
 		try {
 			User user = this.serverRepo.getUser(name);
