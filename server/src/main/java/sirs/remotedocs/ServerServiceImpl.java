@@ -5,6 +5,7 @@ import io.grpc.stub.StreamObserver;
 
 import sirs.remotedocs.domain.FileDetails;
 import sirs.remotedocs.domain.Server;
+import sirs.remotedocs.domain.User;
 import sirs.remotedocs.domain.exception.RemoteDocsException;
 import sirs.remotedocs.grpc.Contract.*;
 import sirs.remotedocs.grpc.RemoteDocsGrpc;
@@ -32,23 +33,14 @@ public class ServerServiceImpl extends RemoteDocsGrpc.RemoteDocsImplBase
 		try {
 			String username = request.getUsername();
 			String accessToken = server.login(username, request.getPassword());
-			List<FileDetails> listOfDocuments = server.getListDocuments(username);
+			List<FileDetails> listOfDocuments = server.getListDocuments(username, null);
 			LoginResponse.Builder builder = LoginResponse.newBuilder().setToken(accessToken);
 
 			for(FileDetails document: listOfDocuments) {
-				Timestamp ts = Timestamp.newBuilder().setSeconds(document
-						.getTimeChange()
-						.atZone(ZoneId.systemDefault())
-						.toEpochSecond()
-				).build();
-
 				DocumentInfo docGrpc = DocumentInfo
 						.newBuilder()
 						.setId(document.getId())
 						.setName(document.getName())
-						.setLastChange(ts)
-						.setLastUpdater(document.getLastUpdater())
-						.setOwner(document.getOwner())
 						.setRelationship(document.getPermission())
 						.build();
 
@@ -63,8 +55,6 @@ public class ServerServiceImpl extends RemoteDocsGrpc.RemoteDocsImplBase
 		}
 		
 	}
-
-	// TODO: Implement logout in GRPC.
 
 	@Override
 	public void register(RegisterRequest request, StreamObserver<RegisterResponse> responseObserver) {
@@ -119,11 +109,19 @@ public class ServerServiceImpl extends RemoteDocsGrpc.RemoteDocsImplBase
 					request.getUsername(),
 					request.getToken()
 			);
+			Timestamp ts = Timestamp.newBuilder().setSeconds(fileDetails
+				.getTimeChange()
+				.atZone(ZoneId.systemDefault())
+				.toEpochSecond()
+			).build();
 
 			DownloadResponse response = DownloadResponse
 					.newBuilder()
 					.setContent(ByteString.copyFrom(fileDetails.getContent()))
 					.setKey(fileDetails.getSharedKey())
+					.setOwner(fileDetails.getOwner())
+					.setLastUpdater(fileDetails.getLastUpdater())
+					.setLastChange(ts)
 					.build();
 
 			responseObserver.onNext(response);
@@ -144,6 +142,129 @@ public class ServerServiceImpl extends RemoteDocsGrpc.RemoteDocsImplBase
 			);
 
 			responseObserver.onNext(UpdateFileNameResponse.newBuilder().build());
+			responseObserver.onCompleted();
+		} catch (RemoteDocsException e) {
+			responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
+		}
+	}
+
+	@Override
+	public void getDocumentsList(GetDocumentsRequest request, StreamObserver<GetDocumentsResponse> responseObserver) {
+		try {
+			List<FileDetails> listOfDocuments = server.getListDocuments(
+				request.getUsername(),
+				request.getToken()
+				);
+			GetDocumentsResponse.Builder builder = GetDocumentsResponse.newBuilder();
+
+			for(FileDetails document: listOfDocuments) {
+				DocumentInfo docGrpc = DocumentInfo
+						.newBuilder()
+						.setId(document.getId())
+						.setName(document.getName())
+						.setRelationship(document.getPermission())
+						.build();
+
+				builder.addDocuments(docGrpc);
+			}
+
+			responseObserver.onNext(builder.build());
+			responseObserver.onCompleted();
+		} catch (RemoteDocsException e) {
+			responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
+		}
+	}
+
+	@Override
+	public void deleteFile(DeleteFileRequest request, StreamObserver<DeleteFileResponse> responseObserver) {
+		try {
+			server.deleteFile(
+					request.getId(),
+					request.getUsername(),
+					request.getToken()
+			);
+
+			responseObserver.onNext(DeleteFileResponse.newBuilder().build());
+			responseObserver.onCompleted();
+		} catch (RemoteDocsException e) {
+			responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
+		}
+	}
+
+	@Override
+	public void logout(LogoutRequest request, StreamObserver<LogoutResponse> responseObserver) {
+		try {
+			server.logout(
+					request.getUsername(),
+					request.getToken()
+			);
+
+			responseObserver.onNext(LogoutResponse.newBuilder().build());
+			responseObserver.onCompleted();
+		} catch (RemoteDocsException e) {
+			responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
+		}
+	}
+
+	@Override
+	public void docUsersList(SharedDocUsersRequest request, StreamObserver<SharedDocUsersResponse> responseObserver) {
+		try {
+			List<User> listOfUsers = server.getNotOwnerUsersOfDoc(
+					request.getId(),
+					request.getUsername(),
+					request.getToken()
+			);
+			SharedDocUsersResponse.Builder builder = SharedDocUsersResponse.newBuilder();
+			for(User user: listOfUsers) {
+				UserGrpc userGrpc = UserGrpc
+						.newBuilder()
+						.setUsername((user.getName()))
+						.setPermission(user.getPermission())
+						.build();
+
+				builder.addUsers(userGrpc);
+			}
+
+			responseObserver.onNext(builder.build());
+			responseObserver.onCompleted();
+		} catch (RemoteDocsException e) {
+			responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
+		}
+	}
+
+
+	@Override
+	public void updatePermission(UpdatePermissionUserRequest request, StreamObserver<UpdatePermissionUserResponse> responseObserver) {
+		try {
+			server.updatePermission(
+					request.getOwner(),
+					request.getToken(),
+					request.getUsername(),
+					request.getId(),
+					request.getPermission()
+
+			);
+
+			responseObserver.onNext(UpdatePermissionUserResponse.newBuilder().build());
+			responseObserver.onCompleted();
+		} catch (RemoteDocsException e) {
+			responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
+		}
+	}
+
+	@Override
+	public void addPermission(AddPermissionUserRequest request, StreamObserver<AddPermissionUserResponse> responseObserver) {
+		try {
+			server.addPermission(
+					request.getOwner(),
+					request.getToken(),
+					request.getUsername(),
+					request.getId(),
+					request.getPermission()
+
+			);
+
+			responseObserver.onNext(AddPermissionUserResponse.newBuilder().build());
 			responseObserver.onCompleted();
 		} catch (RemoteDocsException e) {
 			responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());

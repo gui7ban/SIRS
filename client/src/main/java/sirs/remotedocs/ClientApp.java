@@ -2,9 +2,16 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
+
 package sirs.remotedocs;
 
 import javax.swing.*;
+
+import com.google.protobuf.compiler.PluginProtos.CodeGeneratorResponse.File;
+
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.ArrayList;
 
 public class ClientApp {
     private ServerFrontend frontend;
@@ -13,9 +20,12 @@ public class ClientApp {
     private LoginRegisterForm register;
     private DocumentsList doclist;
     private EditDocumentForm editdoc;
+    private ShareForm share;
     private String token;
     private String username;
+    private Map<Integer,FileDetails> files = new TreeMap<>();
  
+
     
     public ClientApp(String host, int port){
         frontend = new ServerFrontend(host, port);
@@ -24,8 +34,31 @@ public class ClientApp {
         register = new LoginRegisterForm(this, "REGISTER");
         doclist = new DocumentsList(this);
         editdoc = new EditDocumentForm(this);
+        share = new ShareForm(this);
         menu.setVisible(true);
     }
+
+    public String[] getSharedWithMe(){
+        ArrayList<String> result = new ArrayList<>();
+        for(FileDetails file: this.files.values()){
+            if(file.getPermission() != 0){
+                result.add(file.getId()+"/"+file.getName());
+            }
+        }
+        return result.stream().toArray(String[]::new);
+    }
+
+    public String[] getMyDocs(){
+        ArrayList<String> result = new ArrayList<>();
+        for(FileDetails file: this.files.values()){
+            if(file.getPermission() == 0){
+                result.add(file.getId()+"/"+file.getName());
+            }
+        }
+        return result.stream().toArray(String[]::new);
+
+    }
+
 
     public void setUsername(String username){
         this.username = username;
@@ -34,8 +67,30 @@ public class ClientApp {
     public void setToken(String token){
         this.token = token;
     }
+
+    public void setFiles(Map<Integer,FileDetails> files) {
+        this.files = files;
+    }  
+
+    public void addFile(FileDetails file){
+        this.files.put(file.getId(), file);
+    }
+
+    public void deleteFile(int id){
+        this.files.remove(id);
+    }
     
+    public void updateFileName(int id,String filename){
+        FileDetails file = this.files.get(id);
+        file.setName(filename);
+        this.files.put(id, file);
+    }
     /*--------------------GETTERS--------------------*/
+   
+    public FileDetails getFile(int id){
+        return files.get(id);
+    }
+    
     public String getUsername(){
         return username;
     }
@@ -50,6 +105,10 @@ public class ClientApp {
 
     public Menu getMenu() {
         return menu;
+    }
+    
+    public ShareForm getShare(){
+        return share;
     }
 
     public LoginRegisterForm getLogin() {

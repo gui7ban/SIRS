@@ -16,9 +16,15 @@ import java.util.TreeMap;
 
 public class Server {
 
+	private static final String FILES_DIR = "files/";
 	private ServerRepo serverRepo = new ServerRepo();
 	private Logger logger = new Logger("Server", "Core");
 	private Map<String, String> accessTokens = new TreeMap<>();
+
+	public Server(){
+		File f = new File(FILES_DIR);
+		f.mkdir();
+	}
 
 	public String login(String name, String password) throws RemoteDocsException {
 		try {
@@ -42,7 +48,9 @@ public class Server {
 		}
 	}
 
-	public List<FileDetails> getListDocuments(String username) throws RemoteDocsException {
+	public List<FileDetails> getListDocuments(String username, String token) throws RemoteDocsException {
+		if (token != null && !this.isSessionValid(username, token))
+			throw new RemoteDocsException(ErrorMessage.INVALID_SESSION);
 		try {
 			return this.serverRepo.getListDocuments(username);
 		} catch (SQLException e) {
@@ -100,15 +108,16 @@ public class Server {
 	public FileDetails createFile(String name, String username, String token) throws RemoteDocsException {
 		if (!this.isSessionValid(username, token))
 			throw new RemoteDocsException(ErrorMessage.INVALID_SESSION);
-
+		if (name.isBlank())
+			throw new RemoteDocsException(ErrorMessage.FILE_NAME_EMPTY);
 		try {
-			int nextId = this.serverRepo.getMaxFileId() + 1;
-			File newFile = new File(String.valueOf(nextId));
+			
+			int nextId = this.serverRepo.getMaxFileId() + 1; 
+			File newFile = new File(FILES_DIR + String.valueOf(nextId));
 
 			boolean fileExists = this.serverRepo.fileExists(username, name);
 			if(fileExists || !newFile.createNewFile())
 				throw new RemoteDocsException(ErrorMessage.FILE_ALREADY_EXISTS);
-
 			return this.serverRepo.createFile(nextId, name, username);
 			 
 		} catch (IOException | SQLException e) {
@@ -121,23 +130,27 @@ public class Server {
 		if (!this.isSessionValid(username, token))
 			throw new RemoteDocsException(ErrorMessage.INVALID_SESSION);
 
-		File file = new File(String.valueOf(id));
+		File file = new File(FILES_DIR + String.valueOf(id));
 		if (!file.exists())
 			throw new RemoteDocsException(ErrorMessage.FILE_DOESNT_EXIST);
 
 		try {
-			FileDetails fileDetails = this.serverRepo.getFileDetails(id, username);
-			if (fileDetails == null)
+			int permission = this.serverRepo.getFilePermission(id, username);
+			if (permission == -1)
 				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_ACCESS);
-			else if (fileDetails.getPermission() == 1)
+			else if (permission == 1)
 				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_WRITE);
-
+			
+			
+			String fileDigest = HashOperations.digest(Base64.getEncoder().encodeToString(content), null);
+			this.serverRepo.updateFileDigest(id, fileDigest, username);
+			
+			
 			FileOutputStream out = new FileOutputStream(file);
 			out.write(content);
 			out.close();
 
-			String fileDigest = HashOperations.digest(Base64.getEncoder().encodeToString(content), null);
-			this.serverRepo.updateFileDigest(id, fileDigest);
+			
 		} catch (IOException | NoSuchAlgorithmException | SQLException e) {
 			this.logger.log(e.getMessage());
 			throw new RemoteDocsException(ErrorMessage.INTERNAL_ERROR);
@@ -152,8 +165,8 @@ public class Server {
 			FileDetails fileDetails = this.serverRepo.getFileDetails(id, username);
 			if (fileDetails == null)
 				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_ACCESS);
-
-			File file = new File(String.valueOf(id));
+			// TODO: check digest
+			File file = new File(FILES_DIR + String.valueOf(id));
 			if (!file.exists())
 				throw new RemoteDocsException(ErrorMessage.FILE_DOESNT_EXIST);
 
@@ -171,12 +184,13 @@ public class Server {
 	public void updateFileName(int id, String newName, String username, String token) throws RemoteDocsException {
 		if (!this.isSessionValid(username, token))
 			throw new RemoteDocsException(ErrorMessage.INVALID_SESSION);
-
+		if (newName.isBlank())
+			throw new RemoteDocsException(ErrorMessage.FILE_NAME_EMPTY);
 		try {
-			FileDetails fileDetails = this.serverRepo.getFileDetails(id, username);
-			if (fileDetails == null)
+			int permission = this.serverRepo.getFilePermission(id, username);
+			if (permission == -1)
 				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_ACCESS);
-			else if (fileDetails.getPermission() != 0)
+			else if (permission != 0)
 				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_FILENAME_CHANGE);
 
 			this.serverRepo.updateFileName(id, newName);
@@ -186,7 +200,78 @@ public class Server {
 		}
 	}
 
-	
+	public void deleteFile(int id, String username, String token) throws RemoteDocsException {
+		if (!this.isSessionValid(username, token))
+			throw new RemoteDocsException(ErrorMessage.INVALID_SESSION);
+		try {
+			int permission = this.serverRepo.getFilePermission(id, username);
+			if (permission == -1)
+				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_ACCESS);
+			else if (permission != 0)
+				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_FILE_DELETION);
+			File file = new File(FILES_DIR + String.valueOf(id));
+			file.delete();
+			this.serverRepo.deleteFile(id);
+		} catch (SQLException e) {
+			this.logger.log(e.getMessage());
+			throw new RemoteDocsException(ErrorMessage.INTERNAL_ERROR);
+		}
+	}
+
+	public List<User> getNotOwnerUsersOfDoc(int id, String username, String token) throws RemoteDocsException {
+		if (!this.isSessionValid(username, token))
+			throw new RemoteDocsException(ErrorMessage.INVALID_SESSION);
+		try {
+			int permission = this.serverRepo.getFilePermission(id, username);
+			if (permission == -1)
+				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_ACCESS);
+			else if (permission != 0)
+				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_FILE_LIST_ACCESS);
+			
+			return this.serverRepo.getUsersExceptOwnerOfDoc(id);
+		} catch (SQLException e) {
+			this.logger.log(e.getMessage());
+			throw new RemoteDocsException(ErrorMessage.INTERNAL_ERROR);
+		}
+	}
+
+	public void updatePermission(String owner, String token, String username, int id, int permission) throws RemoteDocsException {
+		if (!this.isSessionValid(owner, token))
+			throw new RemoteDocsException(ErrorMessage.INVALID_SESSION);
+		try {
+			int permissionOfOwner = this.serverRepo.getFilePermission(id, owner);
+			if (permissionOfOwner == -1)
+				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_ACCESS);
+			else if (permissionOfOwner != 0)
+				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_FILE_PERMISSIONS);
+			this.serverRepo.updatePermission(username, id, permission);
+		} catch (SQLException e) {
+			this.logger.log(e.getMessage());
+			throw new RemoteDocsException(ErrorMessage.INTERNAL_ERROR);
+		}
+	}
+
+	public void addPermission(String owner, String token, String username, int id, int permission) throws RemoteDocsException {
+		if (!this.isSessionValid(owner, token))
+			throw new RemoteDocsException(ErrorMessage.INVALID_SESSION);
+		try {
+			int permissionOfOwner = this.serverRepo.getFilePermission(id, owner);
+			if (permissionOfOwner == -1)
+				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_ACCESS);
+			else if (permissionOfOwner != 0)
+				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_FILE_PERMISSIONS);
+			User user = this.serverRepo.getUser(username);
+			if (user == null)
+				throw new RemoteDocsException(ErrorMessage.USER_DOESNT_EXIST);
+			this.serverRepo.addPermission(username, id, permission);
+		} catch (SQLException e) {
+			this.logger.log(e.getMessage());
+			throw new RemoteDocsException(ErrorMessage.INTERNAL_ERROR);
+		}
+	}
+
+
+
 
 	// TODO: Share file permissions.
 

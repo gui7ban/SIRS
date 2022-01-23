@@ -1,4 +1,4 @@
-package sirs.remotedocs.domain;
+package sirs.remotedocs;
 
 import java.time.LocalDateTime;
 
@@ -20,15 +20,16 @@ public class FileDetails {
         this.name = name;
         this.permission = permission;
     }
-    // GetDocument aka Download
-    public FileDetails(String key, String owner, String last_updater, LocalDateTime time_change){
-        this.sharedKey = key;
-        this.owner = owner;
-        this.last_updater = last_updater;
+
+    public FileDetails(int id, String name, int permission, LocalDateTime time_change, String last_updater, String owner) {
+        this.id = id;
+        this.name = name;
+        this.permission = permission;
         this.time_change = time_change;
+        this.last_updater = last_updater;
+        this.owner = owner;
     }
     
-
     public FileDetails(String sharedKey, int permission) {
         this.sharedKey = sharedKey;
         this.permission = permission;
@@ -45,6 +46,10 @@ public class FileDetails {
 
     public String getName() {
         return name;
+    }
+
+    public void setName(String filename) {
+        this.name = filename;
     }
 
     public String getDigest(){
