@@ -16,7 +16,7 @@ message FilesRequest {
 }
 
 message FilesResponse {
-    repeated FileInfo files = 1;
+    repeated int32 ids = 1;
     int32 nonce = 2;
 }
 
