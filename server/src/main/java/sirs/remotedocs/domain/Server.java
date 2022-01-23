@@ -113,7 +113,7 @@ public class Server {
 		try {
 			
 			int nextId = this.serverRepo.getMaxFileId() + 1; 
-			File newFile = new File(FILES_DIR + String.valueOf(nextId));
+			File newFile = new File(FILES_DIR + nextId);
 
 			boolean fileExists = this.serverRepo.fileExists(username, name);
 			if(fileExists || !newFile.createNewFile())
@@ -130,7 +130,7 @@ public class Server {
 		if (!this.isSessionValid(username, token))
 			throw new RemoteDocsException(ErrorMessage.INVALID_SESSION);
 
-		File file = new File(FILES_DIR + String.valueOf(id));
+		File file = new File(FILES_DIR + id);
 		if (!file.exists())
 			throw new RemoteDocsException(ErrorMessage.FILE_DOESNT_EXIST);
 
@@ -166,7 +166,7 @@ public class Server {
 			if (fileDetails == null)
 				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_ACCESS);
 			// TODO: check digest
-			File file = new File(FILES_DIR + String.valueOf(id));
+			File file = new File(FILES_DIR + id);
 			if (!file.exists())
 				throw new RemoteDocsException(ErrorMessage.FILE_DOESNT_EXIST);
 
@@ -269,11 +269,6 @@ public class Server {
 			throw new RemoteDocsException(ErrorMessage.INTERNAL_ERROR);
 		}
 	}
-
-
-
-
-	// TODO: Share file permissions.
 
 	public synchronized String ping() {
 		return "I'm alive!";
