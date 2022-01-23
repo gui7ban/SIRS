@@ -36,13 +36,13 @@ public class SymmetricCryptoOperations {
         return cipher.doFinal(input);
     }
 
-    public static byte[] decrypt(byte[] cipherText, SecretKey key, IvParameterSpec iv)
+    public static byte[] decrypt(byte[] input, SecretKey key, IvParameterSpec iv)
         throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException,
         InvalidKeyException, BadPaddingException, IllegalBlockSizeException {  
 
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         cipher.init(Cipher.DECRYPT_MODE, key, iv);
-        return cipher.doFinal(Base64.getDecoder().decode(cipherText));
+        return cipher.doFinal(input);
     }
 }
 

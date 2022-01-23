@@ -67,7 +67,7 @@ public class BackupServerService extends RemoteDocsBackupGrpc.RemoteDocsBackupIm
 
             // Sign the digest of the unencrypted request with the backup server private key.
             byte[] signedResponse = AsymmetricCryptoOperations.sign(
-                    HashOperations.digest(handshakeResponseBytes),
+                    handshakeResponseBytes,
                     this.backupServer.getPrivateKey()
             );
 

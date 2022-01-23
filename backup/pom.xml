@@ -15,7 +15,6 @@
 
     <properties>
         <mainClass>sirs.remotedocs.BackUpServerApp</mainClass>
-		<server.host>localhost</server.host>
 		<server.port>8081</server.port>
     </properties>
 
@@ -64,7 +63,6 @@
 				<configuration>
 					<mainClass>${mainClass}</mainClass>
 					<arguments>
-						<argument>${server.host}</argument>
 						<argument>${server.port}</argument>
 					</arguments>
 				</configuration>

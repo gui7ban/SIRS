@@ -1,19 +1,24 @@
 package sirs.remotedocs.domain;
 
 import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
 import sirs.remotedocs.Logger;
 import sirs.remotedocs.ServerFrontend;
 import sirs.remotedocs.ServerRepo;
 import sirs.remotedocs.backupgrpc.Backupcontract.*;
 import sirs.remotedocs.crypto.AsymmetricCryptoOperations;
 import sirs.remotedocs.crypto.HashOperations;
+import sirs.remotedocs.crypto.SymmetricCryptoOperations;
 import sirs.remotedocs.domain.exception.ErrorMessage;
 import sirs.remotedocs.domain.exception.RemoteDocsException;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 import java.io.*;
-import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
+import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.sql.SQLException;
 import java.util.*;
@@ -27,9 +32,13 @@ public class Server {
 	private KeyPair keyPair;
 
 	// Backup Server classes and data
+	private static final int MAX_NONCE = 25000;
 	private final ServerFrontend serverFrontend;
 	private PublicKey backupServerPublicKey;
+	private SecretKey backupServerSecretKey;
+	private IvParameterSpec backupServerIV;
 	private final Map<Integer, Boolean> nonces = new HashMap<>();
+	private int currentNonce;
 
 	public Server(String backupServerPath) {
 		this.serverFrontend = new ServerFrontend(backupServerPath);
@@ -40,6 +49,7 @@ public class Server {
 				this.logger.log("Error creating files directory.");
 			this.keyPair = AsymmetricCryptoOperations.generateKeyPair();
 			this.exchangePublicKeys();
+			this.handshake();
 		} catch (NoSuchAlgorithmException e) {
 			this.logger.log("Failed to generate key pair for backup server.");
 		}
@@ -57,7 +67,70 @@ public class Server {
 			this.backupServerPublicKey = AsymmetricCryptoOperations.getPublicKeyFromBytes(
 					response.getKey().toByteArray()
 			);
+			this.logger.log("Successfully exchanged keys with Backup Server!");
 		} catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+			this.logger.log(e.getMessage());
+		}
+	}
+
+	public void handshake() {
+		try {
+			this.backupServerSecretKey = SymmetricCryptoOperations.generateKey();
+			this.backupServerIV = SymmetricCryptoOperations.generateIV();
+			this.currentNonce = new SecureRandom().nextInt(MAX_NONCE);
+
+			// Build unencrypted request.
+			HandshakeRequest request = HandshakeRequest
+					.newBuilder()
+					.setNonce(this.currentNonce)
+					.setSecretKey(ByteString.copyFrom(this.backupServerSecretKey.getEncoded()))
+					.setInitializationVector(ByteString.copyFrom(this.backupServerIV.getIV()))
+					.build();
+
+			byte[] handshakeRequestBytes = request.toByteArray();
+
+			// Encrypt request.
+			byte[] encryptedHandshakeRequest = AsymmetricCryptoOperations.encrypt(
+					handshakeRequestBytes,
+					this.backupServerPublicKey
+			);
+
+			// Sign unencrypted request.
+			byte[] signedRequest = AsymmetricCryptoOperations.sign(handshakeRequestBytes, this.keyPair.getPrivate());
+
+			EncryptedRequest encryptedRequest = EncryptedRequest
+					.newBuilder()
+					.setRequest(ByteString.copyFrom(encryptedHandshakeRequest))
+					.setSignature(ByteString.copyFrom(signedRequest))
+					.build();
+
+			EncryptedResponse encryptedResponse = this.serverFrontend.handshake(encryptedRequest);
+			HandshakeResponse handshakeResponse = HandshakeResponse.parseFrom(
+					SymmetricCryptoOperations.decrypt(
+							encryptedResponse.getResponse().toByteArray(),
+							this.backupServerSecretKey,
+							this.backupServerIV
+					)
+			);
+
+			boolean validSignature = AsymmetricCryptoOperations.verifySignature(
+					handshakeResponse.toByteArray(),
+					this.backupServerPublicKey,
+					encryptedResponse.getSignature().toByteArray()
+			);
+
+			if (!validSignature) {
+				this.logger.log("Could not handshake with backup server: signature doesn't match.");
+				return;
+			} else if (handshakeResponse.getNonce() != this.currentNonce + 1) {
+				this.logger.log("Invalid nonce received from backup server: " + handshakeResponse.getNonce());
+				return;
+			}
+
+			this.logger.log("Successful handshake with Backup Server!");
+		} catch (NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException
+				| InvalidKeyException | SignatureException
+				| InvalidAlgorithmParameterException | InvalidProtocolBufferException e) {
 			this.logger.log(e.getMessage());
 		}
 	}

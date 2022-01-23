@@ -15,6 +15,7 @@ public class ServerFrontend {
     public ServerFrontend(String path) {
         this.channel = ManagedChannelBuilder
                 .forTarget(path)
+                .usePlaintext()
                 .build();
         this.stub = RemoteDocsBackupGrpc.newBlockingStub(this.channel);
     }

@@ -13,7 +13,7 @@ import java.util.Base64;
 public class AsymmetricCryptoOperations {
     private static final String SIGN_ALGORITHM = "SHA256withRSA";
     private static final String ENCRYPTION_ALGORITHM = "RSA";
-    private static final int KEY_SIZE = 4096;
+    private static final int KEY_SIZE = 2048;
 
     public static KeyPair generateKeyPair() throws NoSuchAlgorithmException {
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(ENCRYPTION_ALGORITHM);

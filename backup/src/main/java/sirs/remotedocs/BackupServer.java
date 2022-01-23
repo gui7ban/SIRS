@@ -63,9 +63,9 @@ public class BackupServer {
 
         try {
             boolean validSignature = AsymmetricCryptoOperations.verifySignature(
-                    signature,
+                    request,
                     this.serverPublicKey,
-                    request
+                    signature
             );
 
             if (!validSignature)
@@ -74,7 +74,7 @@ public class BackupServer {
             this.nonces.put(nonce, true);
             return nonce + 1;
         } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
-            throw new BackupServerException("Failed to valid server signature. Rejected.");
+            throw new BackupServerException("Failed to validate server signature. Rejected: " + e.getMessage());
         }
     }
 
