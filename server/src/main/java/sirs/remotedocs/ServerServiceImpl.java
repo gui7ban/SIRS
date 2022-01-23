@@ -12,13 +12,17 @@ import sirs.remotedocs.grpc.RemoteDocsGrpc;
 
 import static io.grpc.Status.INVALID_ARGUMENT;
 
+import java.time.Instant;
 import java.time.ZoneId;
 import java.util.List;
 
 public class ServerServiceImpl extends RemoteDocsGrpc.RemoteDocsImplBase
 {
-	private final Server server = new Server();
+	private final Server server;
 
+	public ServerServiceImpl(String backupServerPath) {
+		this.server = new Server(backupServerPath);
+	}
 
 	@Override
 	public void ping(PingRequest request, StreamObserver<PingResponse> responseObserver) {

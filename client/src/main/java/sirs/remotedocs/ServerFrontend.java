@@ -7,7 +7,7 @@ import sirs.remotedocs.grpc.Contract.*;
 
 
 public class ServerFrontend {
-    private RemoteDocsGrpc.RemoteDocsBlockingStub stub;
+    private final RemoteDocsGrpc.RemoteDocsBlockingStub stub;
     private final ManagedChannel channel;
     private static final boolean DEBUG_FLAG = (System.getProperty("debug") != null);
 

@@ -1,0 +1,56 @@
+//
+// Protocol buffers definition for RemoteDocs server
+//
+syntax = "proto3";
+package sirs.remotedocs.backupgrpc;
+
+message FileInfo {
+    int32 id = 1;
+    bytes content = 2;
+    string digest = 3;
+}
+
+message FilesRequest {
+    repeated FileInfo files = 1;
+    int32 nonce = 2;
+}
+
+message FilesResponse {
+    repeated int32 ids = 1;
+    int32 nonce = 2;
+}
+
+
+message HandshakeRequest {
+    bytes secretKey = 1;
+    bytes initializationVector = 2;
+    int32 nonce = 3;
+}
+
+message HandshakeResponse {
+    int32 nonce = 1;
+}
+
+message PublicKeyRequest {
+    bytes publicKey = 1;
+}
+
+message PublicKeyResponse {
+    bytes key = 1;
+}
+
+message EncryptedRequest {
+    bytes request = 1;
+    bytes signature = 2;
+}
+
+message EncryptedResponse {
+    bytes response = 1;
+    bytes signature = 2;
+}
+
+service RemoteDocsBackup {
+    rpc BackupServerFiles(EncryptedRequest) returns (EncryptedResponse);
+    rpc Handshake(EncryptedRequest) returns (EncryptedResponse);
+    rpc GetPublicKey(PublicKeyRequest) returns (PublicKeyResponse);
+}

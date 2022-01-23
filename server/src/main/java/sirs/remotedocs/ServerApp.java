@@ -20,15 +20,15 @@ public class ServerApp {
 		for (int i = 0; i < args.length; i++) {
 			System.out.printf("arg[%d] = %s%n", i, args[i]);
 		}
-		if (args.length != 1) {
+		if (args.length != 2) {
 			System.err.println("Invalid arguments");
-			System.err.printf("Usage: java %s <port>", ServerApp.class.getSimpleName());
+			System.err.printf("Usage: java %s <port> <backupServerPath>", ServerApp.class.getSimpleName());
 			System.exit(-1);
 		}
 
 		try {
 			int port = Integer.parseInt(args[0]);
-			ServerServiceImpl serverService = new ServerServiceImpl();
+			ServerServiceImpl serverService = new ServerServiceImpl(args[1]);
 			Server server = ServerBuilder
 					.forPort(port)
 					.addService(serverService)

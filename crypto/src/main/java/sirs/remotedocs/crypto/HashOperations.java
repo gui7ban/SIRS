@@ -18,6 +18,11 @@ public class HashOperations {
         return Base64.getEncoder().encodeToString(md.digest(message.getBytes()));
     }
 
+    public static String digest(byte[] content) throws NoSuchAlgorithmException {
+        MessageDigest md = MessageDigest.getInstance(HASH_ALGORITHM);
+        return Base64.getEncoder().encodeToString(md.digest(content));
+    }
+
     public static boolean verifyDigest(String message, String digest, byte[] salt) throws NoSuchAlgorithmException {
            return digest.equals(digest(message, salt));
     }

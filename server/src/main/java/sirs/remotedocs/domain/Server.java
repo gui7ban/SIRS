@@ -1,31 +1,235 @@
 package sirs.remotedocs.domain;
 
+import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
 import sirs.remotedocs.Logger;
+import sirs.remotedocs.ServerFrontend;
 import sirs.remotedocs.ServerRepo;
+import sirs.remotedocs.backupgrpc.Backupcontract.*;
+import sirs.remotedocs.crypto.AsymmetricCryptoOperations;
 import sirs.remotedocs.crypto.HashOperations;
+import sirs.remotedocs.crypto.SymmetricCryptoOperations;
 import sirs.remotedocs.domain.exception.ErrorMessage;
 import sirs.remotedocs.domain.exception.RemoteDocsException;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 import java.io.*;
-import java.security.NoSuchAlgorithmException;
+import java.security.*;
+import java.security.spec.InvalidKeySpecException;
 import java.sql.SQLException;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 public class Server {
 
 	private static final String FILES_DIR = "files/";
-	private ServerRepo serverRepo = new ServerRepo();
-	private Logger logger = new Logger("Server", "Core");
-	private Map<String, String> accessTokens = new TreeMap<>();
+	private final ServerRepo serverRepo = new ServerRepo();
+	private final Logger logger = new Logger("Server", "Core");
+	private final Map<String, String> accessTokens = new TreeMap<>();
+	private KeyPair keyPair;
 
-	public Server(){
-		File f = new File(FILES_DIR);
-		f.mkdir();
+	// Backup Server classes and data
+	private static final int MAX_NONCE = 25000;
+	private final ServerFrontend serverFrontend;
+	private PublicKey backupServerPublicKey;
+	private SecretKey backupServerSecretKey;
+	private IvParameterSpec backupServerIV;
+	private int currentNonce;
+
+	public Server(String backupServerPath) {
+		this.serverFrontend = new ServerFrontend(backupServerPath);
+
+		try {
+			File f = new File(FILES_DIR);
+			if(!f.mkdir())
+				this.logger.log("Error creating files directory.");
+			this.keyPair = AsymmetricCryptoOperations.generateKeyPair();
+			this.exchangePublicKeys();
+			this.handshake();
+
+			final int baseDuration = 60 * 1000;
+			final Server thisServer = this;
+			Timer timer = new Timer();
+			timer.scheduleAtFixedRate(new TimerTask() {
+				@Override
+				public void run() {
+					thisServer.backupFiles();
+					thisServer.logger.log("Performing files backup now...");
+				}
+			}, baseDuration * 2, baseDuration);
+		} catch (NoSuchAlgorithmException e) {
+			this.logger.log("Failed to generate key pair for backup server.");
+		}
 	}
 
+	// Backup Server Methods
+	public void exchangePublicKeys() {
+		PublicKeyRequest request = PublicKeyRequest
+				.newBuilder()
+				.setPublicKey(ByteString.copyFrom(this.keyPair.getPublic().getEncoded()))
+				.build();
+
+		PublicKeyResponse response = this.serverFrontend.getBackupServerPublicKey(request);
+		try {
+			this.backupServerPublicKey = AsymmetricCryptoOperations.getPublicKeyFromBytes(
+					response.getKey().toByteArray()
+			);
+			this.logger.log("Successfully exchanged keys with Backup Server!");
+		} catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+			this.logger.log(e.getMessage());
+		}
+	}
+
+	public void handshake() {
+		try {
+			this.backupServerSecretKey = SymmetricCryptoOperations.generateKey();
+			this.backupServerIV = SymmetricCryptoOperations.generateIV();
+			this.currentNonce = new SecureRandom().nextInt(MAX_NONCE);
+
+			// Build unencrypted request.
+			HandshakeRequest request = HandshakeRequest
+					.newBuilder()
+					.setNonce(this.currentNonce)
+					.setSecretKey(ByteString.copyFrom(this.backupServerSecretKey.getEncoded()))
+					.setInitializationVector(ByteString.copyFrom(this.backupServerIV.getIV()))
+					.build();
+
+			byte[] handshakeRequestBytes = request.toByteArray();
+
+			// Encrypt request.
+			byte[] encryptedHandshakeRequest = AsymmetricCryptoOperations.encrypt(
+					handshakeRequestBytes,
+					this.backupServerPublicKey
+			);
+
+			// Sign unencrypted request.
+			byte[] signedRequest = AsymmetricCryptoOperations.sign(handshakeRequestBytes, this.keyPair.getPrivate());
+
+			EncryptedRequest encryptedRequest = EncryptedRequest
+					.newBuilder()
+					.setRequest(ByteString.copyFrom(encryptedHandshakeRequest))
+					.setSignature(ByteString.copyFrom(signedRequest))
+					.build();
+
+			EncryptedResponse encryptedResponse = this.serverFrontend.handshake(encryptedRequest);
+			HandshakeResponse handshakeResponse = HandshakeResponse.parseFrom(
+					SymmetricCryptoOperations.decrypt(
+							encryptedResponse.getResponse().toByteArray(),
+							this.backupServerSecretKey,
+							this.backupServerIV
+					)
+			);
+
+			boolean validSignature = AsymmetricCryptoOperations.verifySignature(
+					handshakeResponse.toByteArray(),
+					this.backupServerPublicKey,
+					encryptedResponse.getSignature().toByteArray()
+			);
+
+			if (!validSignature) {
+				this.logger.log("Could not handshake with backup server: signature doesn't match.");
+				return;
+			} else if (handshakeResponse.getNonce() != this.currentNonce + 1) {
+				this.logger.log("Invalid nonce received from backup server: " + handshakeResponse.getNonce());
+				return;
+			}
+
+			this.currentNonce = handshakeResponse.getNonce();
+			this.logger.log("Successful handshake with Backup Server!");
+		} catch (NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException
+				| InvalidKeyException | SignatureException
+				| InvalidAlgorithmParameterException | InvalidProtocolBufferException e) {
+			this.logger.log(e.getMessage());
+		}
+	}
+
+	public void backupFiles() {
+		try {
+			Map<Integer, String> fileDigests = this.serverRepo.getFilesDigests();
+
+			File directory = new File(FILES_DIR);
+			File[] files = directory.listFiles();
+			if (files == null) {
+				this.logger.log("No files found to backup.");
+				return;
+			}
+
+			FilesRequest.Builder requestBuilder = FilesRequest.newBuilder();
+
+			for (File file: files) {
+				int fileId = Integer.parseInt(file.getName());
+				FileInputStream in = new FileInputStream(file);
+				byte[] fileContent = in.readAllBytes();
+				in.close();
+
+				requestBuilder.addFiles(
+						FileInfo
+								.newBuilder()
+								.setContent(ByteString.copyFrom(fileContent))
+								.setId(fileId)
+								.setDigest(fileDigests.get(fileId))
+								.build()
+				);
+			}
+
+			this.currentNonce += 1;
+			FilesRequest filesRequest = requestBuilder.setNonce(this.currentNonce).build();
+
+			byte[] encryptedFilesRequest = SymmetricCryptoOperations.encrypt(
+					filesRequest.toByteArray(),
+					this.backupServerIV.getIV(),
+					this.backupServerSecretKey
+			);
+
+			byte[] signedRequest = AsymmetricCryptoOperations.sign(
+					filesRequest.toByteArray(),
+					this.keyPair.getPrivate()
+			);
+
+			EncryptedRequest encryptedRequest = EncryptedRequest
+					.newBuilder()
+					.setRequest(ByteString.copyFrom(encryptedFilesRequest))
+					.setSignature(ByteString.copyFrom(signedRequest))
+					.build();
+
+			EncryptedResponse encryptedResponse = this.serverFrontend.backupServerFiles(encryptedRequest);
+			FilesResponse filesResponse = FilesResponse.parseFrom(
+					SymmetricCryptoOperations.decrypt(
+							encryptedResponse.getResponse().toByteArray(),
+							this.backupServerSecretKey,
+							this.backupServerIV
+					)
+			);
+
+			boolean validSignature = AsymmetricCryptoOperations.verifySignature(
+					filesResponse.toByteArray(),
+					this.backupServerPublicKey,
+					encryptedResponse.getSignature().toByteArray()
+			);
+
+			if (!validSignature) {
+				this.logger.log("Signature does not match for FilesResponse from Backup Server.");
+				return;
+			}
+
+			// Check if any files were not backed up. Send an alert in such a case.
+			List<Integer> fileIds = filesResponse.getIdsList();
+			if (fileIds.size() > 0)
+				this.logger.log("[WARNING] The following files were not backed up since the digest associated to the" +
+						" last change does not match the file's digest: " + Arrays.toString(fileIds.toArray()));
+			else
+				this.logger.log("All files were backed up successfully.");
+		} catch (SQLException | IOException | InvalidAlgorithmParameterException | NoSuchPaddingException
+				| IllegalBlockSizeException | NoSuchAlgorithmException | BadPaddingException
+				| InvalidKeyException | SignatureException e) {
+			this.logger.log(e.getMessage());
+		}
+	}
+
+	// Server Methods
 	public String login(String name, String password) throws RemoteDocsException {
 		try {
 			User user = this.serverRepo.getUser(name);
@@ -115,7 +319,7 @@ public class Server {
 		try {
 			
 			int nextId = this.serverRepo.getMaxFileId() + 1; 
-			File newFile = new File(FILES_DIR + String.valueOf(nextId));
+			File newFile = new File(FILES_DIR + nextId);
 
 			boolean fileExists = this.serverRepo.fileExists(username, name);
 			if(fileExists || !newFile.createNewFile())
@@ -132,7 +336,7 @@ public class Server {
 		if (!this.isSessionValid(username, token))
 			throw new RemoteDocsException(ErrorMessage.INVALID_SESSION);
 
-		File file = new File(FILES_DIR + String.valueOf(id));
+		File file = new File(FILES_DIR + id);
 		if (!file.exists())
 			throw new RemoteDocsException(ErrorMessage.FILE_DOESNT_EXIST);
 
@@ -144,7 +348,7 @@ public class Server {
 				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_WRITE);
 			
 			
-			String fileDigest = HashOperations.digest(Base64.getEncoder().encodeToString(content), null);
+			String fileDigest = HashOperations.digest(content);
 			this.serverRepo.updateFileDigest(id, fileDigest, username);
 			
 			
@@ -168,7 +372,7 @@ public class Server {
 			if (fileDetails == null)
 				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_ACCESS);
 			// TODO: check digest
-			File file = new File(FILES_DIR + String.valueOf(id));
+			File file = new File(FILES_DIR + id);
 			if (!file.exists())
 				throw new RemoteDocsException(ErrorMessage.FILE_DOESNT_EXIST);
 
@@ -275,6 +479,7 @@ public class Server {
 		}
 	}
 
+<<<<<<< HEAD
 	public void deletePermission(String owner, String token, String username, int id) throws RemoteDocsException {
 		if (!this.isSessionValid(owner, token))
 			throw new RemoteDocsException(ErrorMessage.INVALID_SESSION);
@@ -295,6 +500,8 @@ public class Server {
 	}
 
 
+=======
+>>>>>>> feature/backup
 	public synchronized String ping() {
 		return "I'm alive!";
 }
