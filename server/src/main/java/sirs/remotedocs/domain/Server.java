@@ -59,7 +59,7 @@ public class Server {
 					thisServer.backupFiles();
 					thisServer.logger.log("Performing files backup now...");
 				}
-			}, baseDuration * 2, baseDuration * 1);
+			}, baseDuration * 2, baseDuration);
 		} catch (NoSuchAlgorithmException e) {
 			this.logger.log("Failed to generate key pair for backup server.");
 		}
