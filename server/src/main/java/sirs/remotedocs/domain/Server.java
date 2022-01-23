@@ -16,9 +16,15 @@ import java.util.TreeMap;
 
 public class Server {
 
+	private static final String FILES_DIR = "files/";
 	private ServerRepo serverRepo = new ServerRepo();
 	private Logger logger = new Logger("Server", "Core");
 	private Map<String, String> accessTokens = new TreeMap<>();
+
+	public Server(){
+		File f = new File(FILES_DIR);
+		f.mkdir();
+	}
 
 	public String login(String name, String password) throws RemoteDocsException {
 		try {
@@ -107,7 +113,7 @@ public class Server {
 		try {
 			
 			int nextId = this.serverRepo.getMaxFileId() + 1; 
-			File newFile = new File(String.valueOf(nextId));
+			File newFile = new File(FILES_DIR + String.valueOf(nextId));
 
 			boolean fileExists = this.serverRepo.fileExists(username, name);
 			if(fileExists || !newFile.createNewFile())
@@ -124,7 +130,7 @@ public class Server {
 		if (!this.isSessionValid(username, token))
 			throw new RemoteDocsException(ErrorMessage.INVALID_SESSION);
 
-		File file = new File(String.valueOf(id));
+		File file = new File(FILES_DIR + String.valueOf(id));
 		if (!file.exists())
 			throw new RemoteDocsException(ErrorMessage.FILE_DOESNT_EXIST);
 
@@ -160,7 +166,7 @@ public class Server {
 			if (fileDetails == null)
 				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_ACCESS);
 			// TODO: check digest
-			File file = new File(String.valueOf(id));
+			File file = new File(FILES_DIR + String.valueOf(id));
 			if (!file.exists())
 				throw new RemoteDocsException(ErrorMessage.FILE_DOESNT_EXIST);
 
@@ -203,7 +209,7 @@ public class Server {
 				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_ACCESS);
 			else if (permission != 0)
 				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_FILE_DELETION);
-			File file = new File(String.valueOf(id));
+			File file = new File(FILES_DIR + String.valueOf(id));
 			file.delete();
 			this.serverRepo.deleteFile(id);
 		} catch (SQLException e) {
