@@ -1,15 +1,18 @@
 package sirs.remotedocs;
 
+import sirs.remotedocs.backupgrpc.Backupcontract;
 import sirs.remotedocs.crypto.AsymmetricCryptoOperations;
+import sirs.remotedocs.crypto.HashOperations;
 import sirs.remotedocs.crypto.SymmetricCryptoOperations;
 import sirs.remotedocs.exceptions.BackupServerException;
 
 import javax.crypto.SecretKey;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class BackupServer {
 
@@ -19,6 +22,7 @@ public class BackupServer {
     private PublicKey serverPublicKey;
     private byte[] serverInitializationVector;
     private final Map<Integer, Boolean> nonces = new HashMap<>();
+    private int currentNonce = 0;
 
     public BackupServer() {
         try {
@@ -58,6 +62,10 @@ public class BackupServer {
         return this.keyPair.getPrivate();
     }
 
+    protected int getNextNonce() {
+        return this.currentNonce + 1;
+    }
+
     public int handshake(byte[] secretKey, byte[] initializationVector, int nonce, byte[] signature, byte[] request)
             throws BackupServerException {
         this.secretKey = SymmetricCryptoOperations.getKeyFromBytes(secretKey);
@@ -77,10 +85,56 @@ public class BackupServer {
                 throw new BackupServerException("Invalid server signature. Rejected.");
 
             this.nonces.put(nonce, true);
-            return nonce + 1;
+            this.currentNonce = nonce;
+            return this.getNextNonce();
         } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
             throw new BackupServerException("Failed to validate server signature. Rejected: " + e.getMessage());
         }
+    }
+
+    private void saveFile(int id, byte[] content) throws IOException {
+        File file = new File(FILES_DIR + id);
+        if (!file.exists())
+            file.createNewFile();
+
+        FileOutputStream out = new FileOutputStream(file, false);
+        out.write(content);
+        out.close();
+    }
+
+    public List<Integer> saveFiles(List<Backupcontract.FileInfo> filesInfo, int nonce, byte[] signature, byte[] request)
+            throws BackupServerException {
+        if (this.nonces.containsKey(nonce))
+            throw new BackupServerException("This nonce was already used! Possible replay attack detected.");
+
+        try {
+            boolean validSignature = AsymmetricCryptoOperations.verifySignature(
+                    request,
+                    this.serverPublicKey,
+                    signature
+            );
+
+            if (!validSignature)
+                throw new BackupServerException("Invalid server signature. Rejected.");
+
+            List<Integer> corruptedFiles = new ArrayList<>();
+            for (Backupcontract.FileInfo fileInfo: filesInfo) {
+                String fileDigest = Base64
+                        .getEncoder()
+                        .encodeToString(HashOperations.digest(fileInfo.getContent().toByteArray()));
+                if (!HashOperations.verifyDigest(fileDigest, fileInfo.getDigest(), null))
+                    corruptedFiles.add(fileInfo.getId());
+                else
+                    this.saveFile(fileInfo.getId(), fileInfo.getContent().toByteArray());
+            }
+
+            this.nonces.put(nonce, true);
+            this.currentNonce = nonce;
+            return corruptedFiles;
+        } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException | IOException e) {
+            throw new BackupServerException("Failed to validate server signature. Rejected: " + e.getMessage());
+        }
+
     }
 
 }

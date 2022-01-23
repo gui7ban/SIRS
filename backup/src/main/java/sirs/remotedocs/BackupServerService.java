@@ -13,7 +13,9 @@ import sirs.remotedocs.exceptions.BackupServerException;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.IvParameterSpec;
 import java.security.*;
+import java.util.List;
 
 import static io.grpc.Status.ABORTED;
 
@@ -46,7 +48,7 @@ public class BackupServerService extends RemoteDocsBackupGrpc.RemoteDocsBackupIm
             );
 
             // Calculate nonce to return in the response.
-            int nextNonce = backupServer.handshake(
+            int nextNonce = this.backupServer.handshake(
                     handshakeRequest.getSecretKey().toByteArray(),
                     handshakeRequest.getInitializationVector().toByteArray(),
                     handshakeRequest.getNonce(),
@@ -88,6 +90,49 @@ public class BackupServerService extends RemoteDocsBackupGrpc.RemoteDocsBackupIm
 
     @Override
     public void backupServerFiles(EncryptedRequest request, StreamObserver<EncryptedResponse> responseObserver) {
-        // TODO: Implement this method.
+        try {
+            FilesRequest filesRequest = FilesRequest.parseFrom(
+                    SymmetricCryptoOperations.decrypt(
+                            request.getRequest().toByteArray(),
+                            this.backupServer.getSecretKey(),
+                            new IvParameterSpec(this.backupServer.getInitializationVector())
+                    )
+            );
+
+            List<Integer> corruptedFiles = this.backupServer.saveFiles(
+                    filesRequest.getFilesList(),
+                    filesRequest.getNonce(),
+                    request.getSignature().toByteArray(),
+                    filesRequest.toByteArray()
+            );
+
+            FilesResponse filesResponse = FilesResponse.newBuilder().addAllIds(corruptedFiles).build();
+
+            // Encrypt Response
+            byte[] encryptedFilesResponse = SymmetricCryptoOperations.encrypt(
+                    filesResponse.toByteArray(),
+                    this.backupServer.getInitializationVector(),
+                    this.backupServer.getSecretKey()
+            );
+
+            // Sign Response
+            byte[] signedResponse = AsymmetricCryptoOperations.sign(
+                    filesResponse.toByteArray(),
+                    this.backupServer.getPrivateKey()
+            );
+
+            EncryptedResponse encryptedResponse = EncryptedResponse
+                    .newBuilder()
+                    .setResponse(ByteString.copyFrom(encryptedFilesResponse))
+                    .setSignature(ByteString.copyFrom(signedResponse))
+                    .build();
+
+            responseObserver.onNext(encryptedResponse);
+            responseObserver.onCompleted();
+        } catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidAlgorithmParameterException
+                | InvalidKeyException | BadPaddingException | IllegalBlockSizeException
+                | InvalidProtocolBufferException | BackupServerException | SignatureException e) {
+            responseObserver.onError(ABORTED.withDescription(e.getMessage()).asRuntimeException());
+        }
     }
 }
