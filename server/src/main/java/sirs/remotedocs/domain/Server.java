@@ -204,6 +204,7 @@ public class Server {
 				return;
 			}
 
+			// Check if any files were not backed up. Send an alert in such a case.
 			List<Integer> fileIds = filesResponse.getIdsList();
 			if (fileIds.size() > 0)
 				this.logger.log("[WARNING] The following files were not backed up since the digest associated to the" +
