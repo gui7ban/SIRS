@@ -6,7 +6,6 @@ import io.grpc.stub.StreamObserver;
 import sirs.remotedocs.backupgrpc.Backupcontract.*;
 import sirs.remotedocs.backupgrpc.RemoteDocsBackupGrpc;
 import sirs.remotedocs.crypto.AsymmetricCryptoOperations;
-import sirs.remotedocs.crypto.HashOperations;
 import sirs.remotedocs.crypto.SymmetricCryptoOperations;
 import sirs.remotedocs.exceptions.BackupServerException;
 
