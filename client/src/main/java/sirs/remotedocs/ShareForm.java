@@ -14,6 +14,8 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import io.grpc.StatusRuntimeException;
 import sirs.remotedocs.grpc.Contract.*;
@@ -44,14 +46,30 @@ public class ShareForm extends javax.swing.JFrame {
                 return renderer;
             }
         });
+
+        sharedWithList.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {  
+              if (sharedWithList.getSelectedValue() != null) {
+                manage_btn.setEnabled(true);
+                remove_btn.setEnabled(true);
+               }
+            }
+           
+        });
         
     }
 
     public void setUsersList(List<String> users){
-        //sharedWithList.setListData(users);
         DefaultListModel<String> model = (DefaultListModel<String>)sharedWithList.getModel();
         model.clear();
         model.addAll(users);
+        if (users.size()==0){
+            remove_btn.setEnabled(false);
+            manage_btn.setEnabled(false);
+        }
+        else
+            sharedWithList.setSelectedIndex(0);
     }
 
     public void setFileNameTf(String filename){
@@ -114,6 +132,11 @@ public class ShareForm extends javax.swing.JFrame {
 
         remove_btn.setBackground(new java.awt.Color(255, 255, 204));
         remove_btn.setText("Remove");
+        remove_btn.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                remove_btnMouseClicked(evt);
+            }
+        });
 
         add_btn.setBackground(new java.awt.Color(255, 255, 204));
         add_btn.setText("Add");
@@ -183,6 +206,41 @@ public class ShareForm extends javax.swing.JFrame {
         clientApp.switchForm(this, clientApp.getDoclist());
     }//GEN-LAST:event_back_btnMouseClicked
 
+    private void remove_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_remove_btnMouseClicked
+        String selectedValue = sharedWithList.getSelectedValue();
+        int index = sharedWithList.getSelectedIndex();
+        if (index != -1)
+        {
+            String[] split = selectedValue.split("/");
+            String username = split[1];
+            DeletePermissionUserRequest request = DeletePermissionUserRequest.newBuilder()
+            .setOwner(clientApp.getUsername())
+            .setId(this.id)
+            .setUsername(username)
+            .setToken(clientApp.getToken()).build();
+            try {
+                clientApp.getFrontend().deletePermission(request);
+                DefaultListModel<String> model = (DefaultListModel<String>)sharedWithList.getModel();                
+                model.remove(index);
+                if (index > 0)
+                    sharedWithList.setSelectedIndex(index-1); 
+                else if (model.getSize() > 0)
+                    sharedWithList.setSelectedIndex(0);
+                else {
+                    remove_btn.setEnabled(false);
+                    manage_btn.setEnabled(false);
+                }
+
+
+            
+            }catch (StatusRuntimeException e) {
+                System.out.println("Caught exception with description: " +
+                e.getStatus().getDescription());
+                JOptionPane.showMessageDialog(null, e.getStatus().getDescription());
+            }
+        }
+    }//GEN-LAST:event_remove_btnMouseClicked
+
     private void add_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_add_btnMouseClicked
         String[] result = new CustomDialog(this).run();
         String username = result[0];
@@ -203,13 +261,13 @@ public class ShareForm extends javax.swing.JFrame {
                 clientApp.getFrontend().addPermission(request);
                 DefaultListModel<String> model = (DefaultListModel<String>)sharedWithList.getModel();                
                 model.addElement(newPermission+"/"+username);
+                sharedWithList.setSelectedIndex(model.size()-1);
             
             }catch (StatusRuntimeException e) {
                 System.out.println("Caught exception with description: " +
                 e.getStatus().getDescription());
                 JOptionPane.showMessageDialog(null, e.getStatus().getDescription());
             }
-            //TODO : share com username
         }
     }//GEN-LAST:event_add_btnMouseClicked
 

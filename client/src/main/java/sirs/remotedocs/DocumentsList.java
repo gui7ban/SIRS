@@ -282,7 +282,7 @@ public class DocumentsList extends javax.swing.JFrame {
 
     private void new_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_new_btnMouseClicked
         //TODO: verificar a opção do dialog
-        String filename = JOptionPane.showInputDialog(this, "Insert filename: ");
+        String filename = JOptionPane.showInputDialog(this, "Insert filename: ","New file",JOptionPane.PLAIN_MESSAGE);
         if (filename != null){
             CreateFileRequest createFileRequest = CreateFileRequest.newBuilder().setName(filename).setUsername(clientApp.getUsername()).setToken(clientApp.getToken()).build();
             try {
@@ -297,7 +297,8 @@ public class DocumentsList extends javax.swing.JFrame {
                 editDocForm.setLastUpdater(username);
                 editDocForm.setOwner(username);
                 editDocForm.setDateChange(timestamp);   
-                editDocForm.setTitle(filename);       
+                editDocForm.setTitle(filename);    
+                editDocForm.setPaneContent("");
                 clientApp.switchForm(this, editDocForm);
             }
             catch (StatusRuntimeException e) {
@@ -395,7 +396,7 @@ public class DocumentsList extends javax.swing.JFrame {
 
     private void rename_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_rename_btnMouseClicked
          //TODO: verificar a opção do dialog
-         String filename = JOptionPane.showInputDialog(this, "Insert a new filename: ");
+         String filename = JOptionPane.showInputDialog(this, "Insert a new filename: ","New filename",JOptionPane.PLAIN_MESSAGE);
          if (filename!=null){
             String selectedValue = myDocumentsList.getSelectedValue();
             int index = myDocumentsList.getSelectedIndex();

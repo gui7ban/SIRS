@@ -152,6 +152,17 @@ message AddPermissionUserResponse {
   
 }
 
+message DeletePermissionUserRequest {
+    string owner = 1;
+    string token = 2;
+    string username = 3;
+    int32 id = 4;
+}
+
+message DeletePermissionUserResponse {
+  
+}
+
 
 service RemoteDocs {
 	rpc Ping(PingRequest) returns (PingResponse);
@@ -167,5 +178,6 @@ service RemoteDocs {
     rpc DocUsersList(SharedDocUsersRequest) returns (SharedDocUsersResponse);
     rpc UpdatePermission(UpdatePermissionUserRequest) returns (UpdatePermissionUserResponse);
     rpc AddPermission(AddPermissionUserRequest) returns (AddPermissionUserResponse);
+    rpc DeletePermission(DeletePermissionUserRequest) returns (DeletePermissionUserResponse);
 
 }

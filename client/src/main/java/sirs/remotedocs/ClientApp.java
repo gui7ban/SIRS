@@ -7,7 +7,6 @@ package sirs.remotedocs;
 
 import javax.swing.*;
 
-import com.google.protobuf.compiler.PluginProtos.CodeGeneratorResponse.File;
 
 import java.util.Map;
 import java.util.TreeMap;

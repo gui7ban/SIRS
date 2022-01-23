@@ -80,6 +80,8 @@ public class Server {
 	
 	public String register(String name, String password) throws RemoteDocsException {
 		try {
+			if(name.isBlank())
+				throw new RemoteDocsException(ErrorMessage.INVALID_USERNAME);
 			User user = this.serverRepo.getUser(name);
 			if (user != null)
 				throw new RemoteDocsException(ErrorMessage.USER_ALREADY_EXISTS);
@@ -266,14 +268,32 @@ public class Server {
 			this.serverRepo.addPermission(username, id, permission);
 		} catch (SQLException e) {
 			this.logger.log(e.getMessage());
+			if(e.getMessage().contains("ERROR: duplicate key value violates unique constraint"))
+				throw new RemoteDocsException(ErrorMessage.USER_ALREADY_HAVE_PERMISSION);
+			else
+				throw new RemoteDocsException(ErrorMessage.INTERNAL_ERROR);
+		}
+	}
+
+	public void deletePermission(String owner, String token, String username, int id) throws RemoteDocsException {
+		if (!this.isSessionValid(owner, token))
+			throw new RemoteDocsException(ErrorMessage.INVALID_SESSION);
+		try {
+			int permissionOfOwner = this.serverRepo.getFilePermission(id, owner);
+			if (permissionOfOwner == -1)
+				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_ACCESS);
+			else if (permissionOfOwner != 0)
+				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_FILE_PERMISSIONS);
+			User user = this.serverRepo.getUser(username);
+			if (user == null)
+				throw new RemoteDocsException(ErrorMessage.USER_DOESNT_EXIST);
+			this.serverRepo.deletePermission(username, id);
+		} catch (SQLException e) {
+			this.logger.log(e.getMessage());
 			throw new RemoteDocsException(ErrorMessage.INTERNAL_ERROR);
 		}
 	}
 
-
-
-
-	// TODO: Share file permissions.
 
 	public synchronized String ping() {
 		return "I'm alive!";

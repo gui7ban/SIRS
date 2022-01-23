@@ -267,4 +267,13 @@ public class ServerRepo {
         statement.setString(4, ""); // TODO: Add encrypted shared key.
         statement.executeUpdate();
     }
+
+    public void deletePermission(String username, int id) throws SQLException {
+        String query = "DELETE FROM remotedocs_permissions WHERE userId = ? AND fileId = ?";
+        Connection connection = this.newConnection();
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setString(1, username);
+        statement.setInt(2, id);
+        statement.executeUpdate();
+    }
 }

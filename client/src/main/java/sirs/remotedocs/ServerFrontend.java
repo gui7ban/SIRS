@@ -53,6 +53,8 @@ public class ServerFrontend {
     
     public AddPermissionUserResponse addPermission(AddPermissionUserRequest request){ return stub.addPermission(request); }
     
+    public DeletePermissionUserResponse deletePermission(DeletePermissionUserRequest request){ return stub.deletePermission(request); }
+
     public void channelEnd() {
         channel.shutdownNow();
     }

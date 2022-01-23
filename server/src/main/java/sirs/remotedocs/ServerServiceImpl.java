@@ -270,4 +270,21 @@ public class ServerServiceImpl extends RemoteDocsGrpc.RemoteDocsImplBase
 			responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
 		}
 	}
+
+	@Override
+	public void deletePermission(DeletePermissionUserRequest request, StreamObserver<DeletePermissionUserResponse> responseObserver) {
+		try {
+			server.deletePermission(
+					request.getOwner(),
+					request.getToken(),
+					request.getUsername(),
+					request.getId()
+			);
+
+			responseObserver.onNext(DeletePermissionUserResponse.newBuilder().build());
+			responseObserver.onCompleted();
+		} catch (RemoteDocsException e) {
+			responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
+		}
+	}
 }
