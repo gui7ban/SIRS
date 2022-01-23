@@ -11,7 +11,9 @@ import java.io.FileReader;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ServerRepo {
 
@@ -79,6 +81,27 @@ public class ServerRepo {
 
         return null;
     }
+
+    public Map<Integer, String> getFilesDigests() throws SQLException {
+        String query = "SELECT id, digest FROM remotedocs_files";
+
+        Connection connection = this.newConnection();
+        PreparedStatement statement = connection.prepareStatement(query);
+        ResultSet resultSet = statement.executeQuery();
+
+        Map<Integer, String> digests = new HashMap<>();
+
+        while (resultSet.next()) {
+            digests.put(
+                    resultSet.getInt("id"),
+                    resultSet.getString("digest")
+            );
+        }
+
+        return digests;
+    }
+
+
     public FileDetails getFileDetails(int fileId, String username) throws SQLException {
         String query = "SELECT time_change,last_updater,sharedKey FROM remotedocs_files,"
         +" remotedocs_permissions WHERE fileId = id and fileId=? and userId=?"; 

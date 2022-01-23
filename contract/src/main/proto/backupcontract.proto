@@ -7,7 +7,7 @@ package sirs.remotedocs.backupgrpc;
 message FileInfo {
     int32 id = 1;
     bytes content = 2;
-    bytes digest = 3;
+    string digest = 3;
 }
 
 message FilesRequest {

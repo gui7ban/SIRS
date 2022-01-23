@@ -126,10 +126,93 @@ public class Server {
 				return;
 			}
 
+			this.currentNonce = handshakeResponse.getNonce();
 			this.logger.log("Successful handshake with Backup Server!");
 		} catch (NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException
 				| InvalidKeyException | SignatureException
 				| InvalidAlgorithmParameterException | InvalidProtocolBufferException e) {
+			this.logger.log(e.getMessage());
+		}
+	}
+
+	public void backupFiles() {
+		try {
+			Map<Integer, String> fileDigests = this.serverRepo.getFilesDigests();
+
+			File directory = new File(FILES_DIR);
+			File[] files = directory.listFiles();
+			if (files == null) {
+				this.logger.log("No files found to backup.");
+				return;
+			}
+
+			FilesRequest.Builder requestBuilder = FilesRequest.newBuilder();
+
+			for (File file: files) {
+				int fileId = Integer.parseInt(file.getName());
+				FileInputStream in = new FileInputStream(file);
+				byte[] fileContent = in.readAllBytes();
+				in.close();
+
+				requestBuilder.addFiles(
+						FileInfo
+								.newBuilder()
+								.setContent(ByteString.copyFrom(fileContent))
+								.setId(fileId)
+								.setDigest(fileDigests.get(fileId))
+								.build()
+				);
+			}
+
+			this.currentNonce += 1;
+			FilesRequest filesRequest = requestBuilder.setNonce(this.currentNonce).build();
+
+			byte[] encryptedFilesRequest = SymmetricCryptoOperations.encrypt(
+					filesRequest.toByteArray(),
+					this.backupServerIV.getIV(),
+					this.backupServerSecretKey
+			);
+
+			byte[] signedRequest = AsymmetricCryptoOperations.sign(
+					filesRequest.toByteArray(),
+					this.keyPair.getPrivate()
+			);
+
+			EncryptedRequest encryptedRequest = EncryptedRequest
+					.newBuilder()
+					.setRequest(ByteString.copyFrom(encryptedFilesRequest))
+					.setSignature(ByteString.copyFrom(signedRequest))
+					.build();
+
+			EncryptedResponse encryptedResponse = this.serverFrontend.backupServerFiles(encryptedRequest);
+			FilesResponse filesResponse = FilesResponse.parseFrom(
+					SymmetricCryptoOperations.decrypt(
+							encryptedResponse.getResponse().toByteArray(),
+							this.backupServerSecretKey,
+							this.backupServerIV
+					)
+			);
+
+			boolean validSignature = AsymmetricCryptoOperations.verifySignature(
+					filesResponse.toByteArray(),
+					this.backupServerPublicKey,
+					encryptedResponse.getSignature().toByteArray()
+			);
+
+			if (!validSignature) {
+				this.logger.log("Signature does not match for FilesResponse from Backup Server.");
+				return;
+			}
+
+			List<Integer> fileIds = filesResponse.getIdsList();
+			if (fileIds.size() > 0)
+				this.logger.log("[WARNING] The following files were not backed up since the digest associated to the" +
+						" last change does not match the file's digest.");
+			else
+				this.logger.log("All files were backed up successfully.");
+		} catch (SQLException | IOException | InvalidAlgorithmParameterException | NoSuchPaddingException
+				| IllegalBlockSizeException | NoSuchAlgorithmException | BadPaddingException
+				| InvalidKeyException | SignatureException e) {
 			this.logger.log(e.getMessage());
 		}
 	}
