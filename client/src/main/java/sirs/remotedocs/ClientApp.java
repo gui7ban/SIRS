@@ -58,13 +58,9 @@ public class ClientApp {
 
     }
 
-
-    public void setUsername(String username){
-        this.username = username;
-    }
-
-    public void setToken(String token){
+    public void loginOrRegister(String username, String token) {
         this.token = token;
+        this.username = username;
     }
 
     public void setFiles(Map<Integer,FileDetails> files) {

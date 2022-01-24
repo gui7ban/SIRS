@@ -203,8 +203,6 @@ public class EditDocumentForm extends javax.swing.JFrame {
 
     private void cancel_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_cancel_btnMouseClicked
         DocumentsList docForm = clientApp.getDoclist();
-        docForm.disableButtons();
-        docForm.clearSelectionOfLists();
         clientApp.switchForm(this, docForm);
     }//GEN-LAST:event_cancel_btnMouseClicked
 
@@ -216,8 +214,6 @@ public class EditDocumentForm extends javax.swing.JFrame {
         try {
             clientApp.getFrontend().upload(uploadRequest);
             DocumentsList docForm = clientApp.getDoclist();
-            docForm.disableButtons();
-            docForm.clearSelectionOfLists();
             clientApp.switchForm(this, docForm);
         
         }

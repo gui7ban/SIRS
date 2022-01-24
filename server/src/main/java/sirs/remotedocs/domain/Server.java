@@ -469,7 +469,7 @@ public class Server {
 			User user = this.serverRepo.getUser(username);
 			if (user == null)
 				throw new RemoteDocsException(ErrorMessage.USER_DOESNT_EXIST);
-			this.serverRepo.addPermission(username, id, permission);
+			this.serverRepo.addPermission(username, id, permission,true);
 		} catch (SQLException e) {
 			this.logger.log(e.getMessage());
 			if(e.getMessage().contains("ERROR: duplicate key value violates unique constraint"))

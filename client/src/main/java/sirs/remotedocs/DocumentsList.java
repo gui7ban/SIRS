@@ -301,6 +301,7 @@ public class DocumentsList extends javax.swing.JFrame {
                 editDocForm.setDateChange(timestamp);   
                 editDocForm.setTitle(filename);    
                 editDocForm.setPaneContent("");
+                myDocumentsList.setSelectedIndex(myDocumentsList.getModel().getSize() - 1);
                 clientApp.switchForm(this, editDocForm);
             }
             catch (StatusRuntimeException e) {

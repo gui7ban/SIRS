@@ -21,7 +21,7 @@ public class CustomDialog extends JDialog implements ActionListener {
     private JButton btnCancel;
     public CustomDialog(Frame parent) {
         super(parent,"Insert User",true);
-        setResizable(false); //TODO: TESTAR O RESIZABLE DISTO!
+        setResizable(false); 
         Point loc = parent.getLocation();
         setLocation(loc.x+60,loc.y+60);
         data = new String[2]; // set to amount of data items

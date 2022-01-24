@@ -91,7 +91,7 @@ public class ShareForm extends javax.swing.JFrame {
 
         jPanel1 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        sharedWithList = new javax.swing.JList<>();
+        sharedWithList = new javax.swing.JList<>(new DefaultListModel<String>());
         jLabel1 = new javax.swing.JLabel();
         filename_tf = new javax.swing.JTextField();
         manage_btn = new javax.swing.JButton();
@@ -138,6 +138,11 @@ public class ShareForm extends javax.swing.JFrame {
 
         remove_btn.setBackground(new java.awt.Color(255, 255, 204));
         remove_btn.setText("Remove");
+        remove_btn.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                remove_btnMouseClicked(evt);
+            }
+        });
 
         add_btn.setBackground(new java.awt.Color(255, 255, 204));
         add_btn.setText("Add");

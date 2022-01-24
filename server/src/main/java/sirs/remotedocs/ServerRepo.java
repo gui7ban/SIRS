@@ -22,7 +22,9 @@ public class ServerRepo {
     private final String dbUsername;
     private final String dbPassword;
     private final String dbDir;
-
+    private Connection connection = null;
+    private PreparedStatement statement = null;
+    private ResultSet resultSet = null;
     public ServerRepo() {
         this.logger = new Logger("Server", "DB");
         this.dbUrl = System.getenv("DB_URL");
@@ -31,7 +33,7 @@ public class ServerRepo {
         this.dbDir = System.getenv("DB_DIR");
 
         try {
-            Connection connection = this.newConnection();
+            connection = this.newConnection();
             this.logger.log("Connected to database successfully!");
 
             ScriptRunner scriptRunner = new ScriptRunner(connection);
@@ -41,262 +43,347 @@ public class ServerRepo {
         } catch (SQLException | FileNotFoundException e) {
             this.logger.log(e.getMessage());
         }
+        finally {
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) { 
+                    /* Ignored */}
+            }
+        }
     }
 
     private Connection newConnection() throws SQLException {
         return DriverManager.getConnection(this.dbUrl, this.dbUsername, this.dbPassword);
     }
 
+    private void closeConnection(){
+        if (connection != null) {
+            try {
+                connection.close();
+            } catch (SQLException e) { 
+                /* Ignored */}
+        }
+        if (statement != null) {
+            try {
+                statement.close();
+            } catch (SQLException e) { /* Ignored */}
+        }
+        if (resultSet != null) {
+            try {
+                resultSet.close();
+            } catch (SQLException e) { /* Ignored */}
+        }
+    }
+
     public User getUser(String username) throws SQLException {
-        String query = "SELECT * FROM remotedocs_users WHERE username=?";
+        try {
+            String query = "SELECT * FROM remotedocs_users WHERE username=?";
+            connection = this.newConnection();
+            statement = connection.prepareStatement(query);
+            statement.setString(1, username);
 
-        Connection connection = this.newConnection();
-        PreparedStatement statement = connection.prepareStatement(query);
-        statement.setString(1, username);
-
-        ResultSet resultSet = statement.executeQuery();
-        if (resultSet.next()) {
-            return new User(
+            resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                return new User(
                     resultSet.getString("username"),
                     resultSet.getString("password"),
-                    resultSet.getString("salt")
-            );
-        }
+                    resultSet.getString("salt"));            
+            }
 
-        return null;
+            return null;
+        } finally{
+            closeConnection();
+        }
     }
 
     public String getOwner(int fileId) throws SQLException {
-        String query = "SELECT userId FROM remotedocs_permissions WHERE" 
-        +" fileId=? and permission = 0";
-
-        Connection connection = this.newConnection();
-        PreparedStatement statement = connection.prepareStatement(query);
-        statement.setInt(1, fileId);
-
-        ResultSet resultSet = statement.executeQuery();
-        if (resultSet.next()) {
-            return resultSet.getString("userId");
+        try {
+            String query = "SELECT userId FROM remotedocs_permissions WHERE" 
+            +" fileId=? and permission = 0";
+            connection = this.newConnection();
+            statement = connection.prepareStatement(query);
+            statement.setInt(1, fileId);
+            resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                return resultSet.getString("userId");
+            }
+            return null;
+        } finally {
+            closeConnection();
         }
 
-        return null;
     }
 
     public Map<Integer, String> getFilesDigests() throws SQLException {
-        String query = "SELECT id, digest FROM remotedocs_files";
+        try{
+            String query = "SELECT id, digest FROM remotedocs_files";
 
-        Connection connection = this.newConnection();
-        PreparedStatement statement = connection.prepareStatement(query);
-        ResultSet resultSet = statement.executeQuery();
+            connection = this.newConnection();
+            statement = connection.prepareStatement(query);
+            resultSet = statement.executeQuery();
 
-        Map<Integer, String> digests = new HashMap<>();
+            Map<Integer, String> digests = new HashMap<>();
 
-        while (resultSet.next()) {
-            digests.put(
-                    resultSet.getInt("id"),
-                    resultSet.getString("digest")
-            );
+            while (resultSet.next()) {
+                digests.put(
+                        resultSet.getInt("id"),
+                        resultSet.getString("digest")
+                );
+            }
+
+            return digests;
+        } finally {
+            closeConnection();
         }
-
-        return digests;
     }
 
 
     public FileDetails getFileDetails(int fileId, String username) throws SQLException {
-        String query = "SELECT time_change,last_updater,sharedKey FROM remotedocs_files,"
-        +" remotedocs_permissions WHERE fileId = id and fileId=? and userId=?"; 
-        String owner = getOwner(fileId);
-        Connection connection = this.newConnection();
-        PreparedStatement statement = connection.prepareStatement(query);
-        statement.setInt(1, fileId);
-        statement.setString(2, username);
+        try {
+            String query = "SELECT time_change,last_updater,sharedKey FROM remotedocs_files,"
+            +" remotedocs_permissions WHERE fileId = id and fileId=? and userId=?"; 
+            String owner = getOwner(fileId);
+            connection = this.newConnection();
+            statement = connection.prepareStatement(query);
+            statement.setInt(1, fileId);
+            statement.setString(2, username);
 
-        ResultSet resultSet = statement.executeQuery();
-        if (resultSet.next()) {
-            return new FileDetails(
-                resultSet.getString("sharedKey"),
-                owner,
-                resultSet.getString("last_updater"),
-                resultSet.getTimestamp("time_change").toLocalDateTime()
-            );
+            resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                return new FileDetails(
+                    resultSet.getString("sharedKey"),
+                    owner,
+                    resultSet.getString("last_updater"),
+                    resultSet.getTimestamp("time_change").toLocalDateTime()
+                );
+            }
+            return null;
+        } finally {
+            closeConnection();
         }
-        return null;
 
     }
 
     public void registerUser(String username, String hashedPassword, String salt) throws SQLException {
-        String query = "INSERT INTO remotedocs_users (username, password, salt, public_key) VALUES (?, ?, ?, ?)";
+        try {
+            String query = "INSERT INTO remotedocs_users (username, password, salt, public_key) VALUES (?, ?, ?, ?)";
 
-        Connection connection = this.newConnection();
-        PreparedStatement statement = connection.prepareStatement(query);
-        statement.setString(1, username);
-        statement.setString(2, hashedPassword);
-        statement.setString(3, salt);
-        statement.setString(4, "");
-        statement.executeUpdate();
+            connection = this.newConnection();
+            statement = connection.prepareStatement(query);
+            statement.setString(1, username);
+            statement.setString(2, hashedPassword);
+            statement.setString(3, salt);
+            statement.setString(4, "");
+            statement.executeUpdate();
+        } finally {
+            closeConnection();
+        }
     }
 
     public FileDetails createFile(int id, String name, String username) throws SQLException {
-        String query = "INSERT INTO remotedocs_files (id, name, digest, last_updater) VALUES (?, ?, ?, ?)";
-        String query2 = "INSERT INTO remotedocs_permissions (userId, fileId, permission, sharedKey) VALUES (?, ?, ?, ?)";
-        String query3 = "SELECT time_change from remotedocs_files where id =?";
-        Connection connection = this.newConnection();
-        PreparedStatement createFile = connection.prepareStatement(query);
-        PreparedStatement addFilePermissions = connection.prepareStatement(query2);
-        PreparedStatement getTimeChange = connection.prepareStatement(query3);
-        createFile.setInt(1, id);
-        createFile.setString(2, name);
-        createFile.setString(3, "");
-        createFile.setString(4, username);
-        createFile.executeUpdate();
-
-        addFilePermissions.setString(1, username);
-        addFilePermissions.setInt(2, id);
-        addFilePermissions.setInt(3, Permissions.OWNER.getValue());
-        addFilePermissions.setString(4, ""); // TODO: Add encrypted shared key.
-        addFilePermissions.executeUpdate();
-
-        getTimeChange.setInt(1,id);
-        ResultSet getTime = getTimeChange.executeQuery();
-        getTime.next();
-        LocalDateTime time_change = getTime.getTimestamp("time_change").toLocalDateTime();
-        return new FileDetails(id, time_change);
+        try {
+            String query = "INSERT INTO remotedocs_files (id, name, digest, last_updater) VALUES (?, ?, ?, ?)";
+            String query2 = "SELECT time_change from remotedocs_files where id =?";
+            connection = this.newConnection();
+            statement = connection.prepareStatement(query);
+            statement.setInt(1, id);
+            statement.setString(2, name);
+            statement.setString(3, "");
+            statement.setString(4, username);
+            statement.executeUpdate();
+            
+            addPermission(username, id, 0, false);
+            statement = connection.prepareStatement(query2);
+            statement.setInt(1,id);
+            resultSet = statement.executeQuery();
+            resultSet.next();
+            LocalDateTime time_change = resultSet.getTimestamp("time_change").toLocalDateTime();
+            return new FileDetails(id, time_change);
+        } finally {
+            closeConnection();
+        }
         
     }
 
     public boolean fileExists(String username, String name) throws SQLException {
-        String query = "SELECT COUNT(A.id) AS total FROM remotedocs_files AS A, remotedocs_permissions AS B WHERE " +
+        try {
+            String query = "SELECT COUNT(A.id) AS total FROM remotedocs_files AS A, remotedocs_permissions AS B WHERE " +
                 "A.id = B.fileId AND B.userId=? AND A.name=? AND B.permission = 0";
 
-        Connection connection = this.newConnection();
-        PreparedStatement statement = connection.prepareStatement(query);
-        statement.setString(1, username);
-        statement.setString(2, name);
-        ResultSet resultSet = statement.executeQuery();
+            connection = this.newConnection();
+            statement = connection.prepareStatement(query);
+            statement.setString(1, username);
+            statement.setString(2, name);
+            resultSet = statement.executeQuery();
 
-        return resultSet.next() && resultSet.getInt("total") > 0;
+            return resultSet.next() && resultSet.getInt("total") > 0;
+        } finally {
+            closeConnection();
+        }
     }
 
     public int getMaxFileId() throws SQLException {
-        String query = "SELECT MAX(id) AS maxId FROM remotedocs_files";
-        Connection connection = this.newConnection();
-        PreparedStatement statement = connection.prepareStatement(query);
-        ResultSet resultSet = statement.executeQuery();
+        try {
+            String query = "SELECT MAX(id) AS maxId FROM remotedocs_files";
+            connection = this.newConnection();
+            statement = connection.prepareStatement(query);
+            resultSet = statement.executeQuery();
 
-        if (resultSet.next())
-            return resultSet.getInt("maxId");
-        else
-            return -1;
+            if (resultSet.next())
+                return resultSet.getInt("maxId");
+            else
+                return -1;
+    
+        } finally {
+            closeConnection();
+        }
     }
-
     public void updateFileDigest(int id, String digest, String username) throws SQLException {
-        String query = "UPDATE remotedocs_files SET digest=?, time_change=now(), last_updater=? WHERE id=?";
+        try {
+            String query = "UPDATE remotedocs_files SET digest=?, time_change=now(), last_updater=? WHERE id=?";
 
-        Connection connection = this.newConnection();
-        PreparedStatement statement = connection.prepareStatement(query);
-        statement.setString(1, digest);
-        statement.setString(2, username);
-        statement.setInt(3, id);
-        statement.executeUpdate();
+            connection = this.newConnection();
+            statement = connection.prepareStatement(query);
+            statement.setString(1, digest);
+            statement.setString(2, username);
+            statement.setInt(3, id);
+            statement.executeUpdate();
+        } finally {
+            closeConnection();
+        }
     }
 
     public void updateFileName(int id, String newName) throws SQLException {
-        String query = "UPDATE remotedocs_files SET name=? WHERE id=?";
+        try {
+            String query = "UPDATE remotedocs_files SET name=? WHERE id=?";
 
-        Connection connection = this.newConnection();
-        PreparedStatement statement = connection.prepareStatement(query);
-        statement.setString(1, newName);
-        statement.setInt(2, id);
-        statement.executeUpdate();
+            connection = this.newConnection();
+            statement = connection.prepareStatement(query);
+            statement.setString(1, newName);
+            statement.setInt(2, id);
+            statement.executeUpdate();
+        } finally {
+            closeConnection();
+        }
     }
 
     public int getFilePermission(int id, String username) throws SQLException {
-        String query = "SELECT permission FROM remotedocs_permissions WHERE fileId=? AND userId=?";
+        try {
+            String query = "SELECT permission FROM remotedocs_permissions WHERE fileId=? AND userId=?";
 
-        Connection connection = this.newConnection();
-        PreparedStatement statement = connection.prepareStatement(query);
-        statement.setInt(1, id);
-        statement.setString(2, username);
-        ResultSet resultSet = statement.executeQuery();
+            connection = this.newConnection();
+            statement = connection.prepareStatement(query);
+            statement.setInt(1, id);
+            statement.setString(2, username);
+            resultSet = statement.executeQuery();
 
-        if (resultSet.next()) {
-            return resultSet.getInt("permission");
+            if (resultSet.next()) {
+                return resultSet.getInt("permission");
+            }
+
+            return -1;
+        } finally {
+            closeConnection();
         }
-
-        return -1;
     }
     public List<FileDetails> getListDocuments(String username) throws SQLException {
-        String query = "SELECT fileId,name,permission FROM remotedocs_permissions,remotedocs_files WHERE fileId = id and userId=?";
-        ArrayList<FileDetails> listOfDocuments = new ArrayList<>();
-        Connection connection = this.newConnection();
-        PreparedStatement statement = connection.prepareStatement(query);
-        statement.setString(1, username);
+        try {
+            String query = "SELECT fileId,name,permission FROM remotedocs_permissions,remotedocs_files WHERE fileId = id and userId=?";
+            ArrayList<FileDetails> listOfDocuments = new ArrayList<>();
+            connection = this.newConnection();
+            statement = connection.prepareStatement(query);
+            statement.setString(1, username);
 
-        ResultSet resultSet = statement.executeQuery();
-        while(resultSet.next()){
-            int fileId = resultSet.getInt("fileId");
-            String name = resultSet.getString("name");
-            int permission = resultSet.getInt("permission");         
-            listOfDocuments.add(new FileDetails(fileId, name, permission));
+            resultSet = statement.executeQuery();
+            while(resultSet.next()){
+                int fileId = resultSet.getInt("fileId");
+                String name = resultSet.getString("name");
+                int permission = resultSet.getInt("permission");         
+                listOfDocuments.add(new FileDetails(fileId, name, permission));
+            }
+
+            return listOfDocuments;
+        } finally {
+            closeConnection();
         }
-
-        return listOfDocuments;
     }
 
     public void deleteFile(int id) throws SQLException {
-        String query = "DELETE FROM remotedocs_files where id=?";
-        Connection connection = this.newConnection();
-        PreparedStatement statement = connection.prepareStatement(query);
-        statement.setInt(1, id);
-        statement.executeUpdate();
+        try {
+            String query = "DELETE FROM remotedocs_files where id=?";
+            connection = this.newConnection();
+            statement = connection.prepareStatement(query);
+            statement.setInt(1, id);
+            statement.executeUpdate();
+        } finally {
+            closeConnection();
+        }
     }
 
     public List<User> getUsersExceptOwnerOfDoc(int id) throws SQLException{
-        String query = "SELECT userId,permission FROM remotedocs_permissions WHERE fileId = ? and permission > 0";
-        ArrayList<User> listOfUsers = new ArrayList<>();
-        Connection connection = this.newConnection();
-        PreparedStatement statement = connection.prepareStatement(query);
-        statement.setInt(1, id);
+        try{ 
+            String query = "SELECT userId,permission FROM remotedocs_permissions WHERE fileId = ? and permission > 0";
+            ArrayList<User> listOfUsers = new ArrayList<>();
+            connection = this.newConnection();
+            statement = connection.prepareStatement(query);
+            statement.setInt(1, id);
 
-        ResultSet resultSet = statement.executeQuery();
-        while(resultSet.next()){
-            String username = resultSet.getString("userId");
-            int permission = resultSet.getInt("permission");         
-            listOfUsers.add(new User(username, permission));
+            resultSet = statement.executeQuery();
+            while(resultSet.next()){
+                String username = resultSet.getString("userId");
+                int permission = resultSet.getInt("permission");         
+                listOfUsers.add(new User(username, permission));
+            }
+
+            return listOfUsers;
+        } finally {
+            closeConnection();
         }
-
-        return listOfUsers;
     }
 
     public void updatePermission(String username, int id, int permission) throws SQLException {
-        String query = "UPDATE remotedocs_permissions SET permission=? WHERE fileId=? AND userId=?";
+        try {
+            String query = "UPDATE remotedocs_permissions SET permission=? WHERE fileId=? AND userId=?";
 
-        Connection connection = this.newConnection();
-        PreparedStatement statement = connection.prepareStatement(query);
-        statement.setInt(1, permission);
-        statement.setInt(2, id);
-        statement.setString(3, username);
-        statement.executeUpdate();
+            connection = this.newConnection();
+            statement = connection.prepareStatement(query);
+            statement.setInt(1, permission);
+            statement.setInt(2, id);
+            statement.setString(3, username);
+            statement.executeUpdate();
+        } finally {
+            closeConnection();
+        }
     }
 
-    public void addPermission(String username, int id, int permission) throws SQLException {
-        String query = "INSERT INTO remotedocs_permissions (userId, fileId, permission, sharedKey) VALUES (?, ?, ?, ?)";
+    public void addPermission(String username, int id, int permission, boolean flag) throws SQLException {
+        try {
+            String query = "INSERT INTO remotedocs_permissions (userId, fileId, permission, sharedKey) VALUES (?, ?, ?, ?)";
 
-        Connection connection = this.newConnection();
-        PreparedStatement statement = connection.prepareStatement(query);
-        statement.setString(1, username);
-        statement.setInt(2, id);
-        statement.setInt(3, permission);
-        statement.setString(4, ""); // TODO: Add encrypted shared key.
-        statement.executeUpdate();
+            connection = this.newConnection();
+            statement = connection.prepareStatement(query);
+            statement.setString(1, username);
+            statement.setInt(2, id);
+            statement.setInt(3, permission);
+            statement.setString(4, ""); // TODO: Add encrypted shared key.
+            statement.executeUpdate();
+        } finally {
+            if (flag)
+                closeConnection();
+        }
     }
 
     public void deletePermission(String username, int id) throws SQLException {
-        String query = "DELETE FROM remotedocs_permissions WHERE userId = ? AND fileId = ?";
-        Connection connection = this.newConnection();
-        PreparedStatement statement = connection.prepareStatement(query);
-        statement.setString(1, username);
-        statement.setInt(2, id);
-        statement.executeUpdate();
+        try {
+            String query = "DELETE FROM remotedocs_permissions WHERE userId = ? AND fileId = ?";
+            connection = this.newConnection();
+            statement = connection.prepareStatement(query);
+            statement.setString(1, username);
+            statement.setInt(2, id);
+            statement.executeUpdate();
+        } finally {
+            closeConnection();
+        }
     }
 }
