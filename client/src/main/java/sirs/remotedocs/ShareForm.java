@@ -91,7 +91,7 @@ public class ShareForm extends javax.swing.JFrame {
 
         jPanel1 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        sharedWithList = new javax.swing.JList<>(new DefaultListModel<String>());
+        sharedWithList = new javax.swing.JList<>();
         jLabel1 = new javax.swing.JLabel();
         filename_tf = new javax.swing.JTextField();
         manage_btn = new javax.swing.JButton();
@@ -99,8 +99,14 @@ public class ShareForm extends javax.swing.JFrame {
         remove_btn = new javax.swing.JButton();
         add_btn = new javax.swing.JButton();
 
+       
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setResizable(false);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         jPanel1.setBackground(new java.awt.Color(255, 102, 51));
 
@@ -132,11 +138,6 @@ public class ShareForm extends javax.swing.JFrame {
 
         remove_btn.setBackground(new java.awt.Color(255, 255, 204));
         remove_btn.setText("Remove");
-        remove_btn.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                remove_btnMouseClicked(evt);
-            }
-        });
 
         add_btn.setBackground(new java.awt.Color(255, 255, 204));
         add_btn.setText("Add");
@@ -200,6 +201,7 @@ public class ShareForm extends javax.swing.JFrame {
         );
 
         pack();
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
     private void back_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_back_btnMouseClicked
@@ -207,6 +209,7 @@ public class ShareForm extends javax.swing.JFrame {
     }//GEN-LAST:event_back_btnMouseClicked
 
     private void remove_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_remove_btnMouseClicked
+        
         String selectedValue = sharedWithList.getSelectedValue();
         int index = sharedWithList.getSelectedIndex();
         if (index != -1)
@@ -274,7 +277,7 @@ public class ShareForm extends javax.swing.JFrame {
     private void manage_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_manage_btnMouseClicked
         String selectedValue = sharedWithList.getSelectedValue();
         int index = sharedWithList.getSelectedIndex();
-        if (!selectedValue.isEmpty()) {
+        if (index != -1) {
             String[] split = selectedValue.split("/");
             int permission = Integer.parseInt(split[0]);
             String username = split[1];
@@ -324,6 +327,12 @@ public class ShareForm extends javax.swing.JFrame {
         }
 
     }//GEN-LAST:event_manage_btnMouseClicked
+
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        this.dispose();
+        clientApp.getFrontend().channelEnd();
+        System.exit(0);   
+     }//GEN-LAST:event_formWindowClosing
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

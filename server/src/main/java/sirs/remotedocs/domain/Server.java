@@ -41,11 +41,11 @@ public class Server {
 
 	public Server(String backupServerPath) {
 		this.serverFrontend = new ServerFrontend(backupServerPath);
+		File f = new File(FILES_DIR);
+		if(!f.mkdir())
+			this.logger.log("Error creating files directory.");
 
 		try {
-			File f = new File(FILES_DIR);
-			if(!f.mkdir())
-				this.logger.log("Error creating files directory.");
 			this.keyPair = AsymmetricCryptoOperations.generateKeyPair();
 			this.exchangePublicKeys();
 			this.handshake();
@@ -479,7 +479,6 @@ public class Server {
 		}
 	}
 
-<<<<<<< HEAD
 	public void deletePermission(String owner, String token, String username, int id) throws RemoteDocsException {
 		if (!this.isSessionValid(owner, token))
 			throw new RemoteDocsException(ErrorMessage.INVALID_SESSION);
@@ -500,8 +499,6 @@ public class Server {
 	}
 
 
-=======
->>>>>>> feature/backup
 	public synchronized String ping() {
 		return "I'm alive!";
 }

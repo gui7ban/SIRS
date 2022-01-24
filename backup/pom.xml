@@ -15,7 +15,7 @@
 
     <properties>
         <mainClass>sirs.remotedocs.BackUpServerApp</mainClass>
-		<server.port>8081</server.port>
+		<port>8081</port>
     </properties>
 
     <dependencies>
@@ -63,7 +63,7 @@
 				<configuration>
 					<mainClass>${mainClass}</mainClass>
 					<arguments>
-						<argument>${server.port}</argument>
+						<argument>${port}</argument>
 					</arguments>
 				</configuration>
 			</plugin>

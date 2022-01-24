@@ -49,6 +49,7 @@ message EncryptedResponse {
     bytes signature = 2;
 }
 
+
 service RemoteDocsBackup {
     rpc BackupServerFiles(EncryptedRequest) returns (EncryptedResponse);
     rpc Handshake(EncryptedRequest) returns (EncryptedResponse);

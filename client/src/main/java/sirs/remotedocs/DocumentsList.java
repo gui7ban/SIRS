@@ -261,27 +261,29 @@ public class DocumentsList extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void delete_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_delete_btnMouseClicked
-        String selectedValue = myDocumentsList.getSelectedValue();
-        if (!selectedValue.isEmpty()) {
-            int id = Integer.parseInt(selectedValue.split("/")[0]);
-            DeleteFileRequest deleteFileRequest = DeleteFileRequest.newBuilder().setId(id).setUsername(clientApp.getUsername()).setToken(clientApp.getToken()).build();
-            try {
-               clientApp.getFrontend().deleteFile(deleteFileRequest);
-               clientApp.deleteFile(id);
-               setMyDocumentsList(clientApp.getMyDocs());
-               disableButtons();
-            }
-            catch (StatusRuntimeException e) {
-                System.out.println("Caught exception with description: " +
-                e.getStatus().getDescription());
-                JOptionPane.showMessageDialog(null, e.getStatus().getDescription());
-            }
-         }
+        if(delete_btn.isEnabled()) {
+            String selectedValue = myDocumentsList.getSelectedValue();
+            if (!selectedValue.isEmpty()) {
+                int id = Integer.parseInt(selectedValue.split("/")[0]);
+                DeleteFileRequest deleteFileRequest = DeleteFileRequest.newBuilder().setId(id).setUsername(clientApp.getUsername()).setToken(clientApp.getToken()).build();
+                try {
+                   clientApp.getFrontend().deleteFile(deleteFileRequest);
+                   clientApp.deleteFile(id);
+                   setMyDocumentsList(clientApp.getMyDocs());
+                   disableButtons();
+                }
+                catch (StatusRuntimeException e) {
+                    System.out.println("Caught exception with description: " +
+                    e.getStatus().getDescription());
+                    JOptionPane.showMessageDialog(null, e.getStatus().getDescription());
+                }
+             }
+        }
+       
         
     }//GEN-LAST:event_delete_btnMouseClicked
 
     private void new_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_new_btnMouseClicked
-        //TODO: verificar a opção do dialog
         String filename = JOptionPane.showInputDialog(this, "Insert filename: ","New file",JOptionPane.PLAIN_MESSAGE);
         if (filename != null){
             CreateFileRequest createFileRequest = CreateFileRequest.newBuilder().setName(filename).setUsername(clientApp.getUsername()).setToken(clientApp.getToken()).build();
@@ -311,70 +313,73 @@ public class DocumentsList extends javax.swing.JFrame {
     }//GEN-LAST:event_new_btnMouseClicked
 
     private void open_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_open_btnMouseClicked
-        String selectedValue;
-        if(!myDocumentsList.isSelectionEmpty())
-            selectedValue = myDocumentsList.getSelectedValue();
-        else
-            selectedValue = sharedWithMeList.getSelectedValue();
-            
-        if (!selectedValue.isEmpty()) {
-            int id = Integer.parseInt(selectedValue.split("/")[0]);
-
-            DownloadRequest downloadRequest = DownloadRequest.newBuilder().setId(id).setUsername(clientApp.getUsername()).setToken(clientApp.getToken()).build();
-            try {
-                DownloadResponse downloadResponse = clientApp.getFrontend().download(downloadRequest);
-                EditDocumentForm editDocForm = clientApp.getEditdoc();
-                String content = downloadResponse.getContent().toStringUtf8();
-                editDocForm.setPaneContent(content);
-                editDocForm.setId(id);
-        
-                FileDetails details = clientApp.getFile(id);
+        if(open_btn.isEnabled()){
+            String selectedValue;
+            if(!myDocumentsList.isSelectionEmpty())
+                selectedValue = myDocumentsList.getSelectedValue();
+            else
+                selectedValue = sharedWithMeList.getSelectedValue();
                 
-                details.setContent(downloadResponse.getContent().toByteArray());
-                LocalDateTime timestamp = Instant.ofEpochSecond(downloadResponse.getLastChange().getSeconds()).atZone(ZoneId.systemDefault()).toLocalDateTime();
-
-                editDocForm.setLastUpdater(downloadResponse.getLastUpdater());
-                editDocForm.setOwner(downloadResponse.getOwner());
-                editDocForm.setDateChange(timestamp);   
-                editDocForm.setTitle(details.getName());  
-                if(details.getPermission() == 1)
-                    editDocForm.setViewerLayout(); 
-                else
-                    editDocForm.setDefaultLayout();
-                clientApp.switchForm(this, editDocForm);
-            }
-            catch (StatusRuntimeException e) {
-                if(e.getStatus().getDescription().equals("You do not have enough permissions to access this file.")){
-                   try {
-                        GetDocumentsRequest docsRequest = GetDocumentsRequest.newBuilder().setUsername(clientApp.getUsername()).setToken(clientApp.getToken()).build();
-                        GetDocumentsResponse docsResponse = clientApp.getFrontend().getDocumentsList(docsRequest);
-                        List<DocumentInfo> listGrpc = docsResponse.getDocumentsList();
-                        Map<Integer,FileDetails> listDocs = new TreeMap<>(); 
-                        
-                        for (DocumentInfo docGrpc: listGrpc){
-                            listDocs.put(docGrpc.getId(), new FileDetails(docGrpc.getId(), docGrpc.getName(), docGrpc.getRelationship()));
-                        }
-                        JOptionPane.showMessageDialog(null, "This file is no longer shared with you");
-
-                        clientApp.setFiles(listDocs);
-                        setMyDocumentsList(clientApp.getMyDocs());
-                        setSharedList(clientApp.getSharedWithMe());
-                    }catch (StatusRuntimeException b) {
+            if (!selectedValue.isEmpty()) {
+                int id = Integer.parseInt(selectedValue.split("/")[0]);
+    
+                DownloadRequest downloadRequest = DownloadRequest.newBuilder().setId(id).setUsername(clientApp.getUsername()).setToken(clientApp.getToken()).build();
+                try {
+                    DownloadResponse downloadResponse = clientApp.getFrontend().download(downloadRequest);
+                    EditDocumentForm editDocForm = clientApp.getEditdoc();
+                    String content = downloadResponse.getContent().toStringUtf8();
+                    editDocForm.setPaneContent(content);
+                    editDocForm.setId(id);
+            
+                    FileDetails details = clientApp.getFile(id);
+                    
+                    details.setContent(downloadResponse.getContent().toByteArray());
+                    LocalDateTime timestamp = Instant.ofEpochSecond(downloadResponse.getLastChange().getSeconds()).atZone(ZoneId.systemDefault()).toLocalDateTime();
+    
+                    editDocForm.setLastUpdater(downloadResponse.getLastUpdater());
+                    editDocForm.setOwner(downloadResponse.getOwner());
+                    editDocForm.setDateChange(timestamp);   
+                    editDocForm.setTitle(details.getName());  
+                    if(details.getPermission() == 1)
+                        editDocForm.setViewerLayout(); 
+                    else
+                        editDocForm.setDefaultLayout();
+                    clientApp.switchForm(this, editDocForm);
+                }
+                catch (StatusRuntimeException e) {
+                    if(e.getStatus().getDescription().equals("You do not have enough permissions to access this file.")){
+                       try {
+                            GetDocumentsRequest docsRequest = GetDocumentsRequest.newBuilder().setUsername(clientApp.getUsername()).setToken(clientApp.getToken()).build();
+                            GetDocumentsResponse docsResponse = clientApp.getFrontend().getDocumentsList(docsRequest);
+                            List<DocumentInfo> listGrpc = docsResponse.getDocumentsList();
+                            Map<Integer,FileDetails> listDocs = new TreeMap<>(); 
+                            
+                            for (DocumentInfo docGrpc: listGrpc){
+                                listDocs.put(docGrpc.getId(), new FileDetails(docGrpc.getId(), docGrpc.getName(), docGrpc.getRelationship()));
+                            }
+                            JOptionPane.showMessageDialog(null, "This file is no longer shared with you");
+    
+                            clientApp.setFiles(listDocs);
+                            setMyDocumentsList(clientApp.getMyDocs());
+                            setSharedList(clientApp.getSharedWithMe());
+                        }catch (StatusRuntimeException b) {
+                            System.out.println("Caught exception with description: " +
+                            e.getStatus().getDescription());
+                            JOptionPane.showMessageDialog(null, e.getStatus().getDescription());
+                    
+                       }
+                                         
+                    }
+                    else{
                         System.out.println("Caught exception with description: " +
                         e.getStatus().getDescription());
                         JOptionPane.showMessageDialog(null, e.getStatus().getDescription());
-                
-                   }
-                                     
-                }
-                else{
-                    System.out.println("Caught exception with description: " +
-                    e.getStatus().getDescription());
-                    JOptionPane.showMessageDialog(null, e.getStatus().getDescription());
+                    }
                 }
             }
+        
         }
-    
+       
         
     }//GEN-LAST:event_open_btnMouseClicked
 
@@ -395,59 +400,64 @@ public class DocumentsList extends javax.swing.JFrame {
     }//GEN-LAST:event_logout_btnMouseClicked
 
     private void rename_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_rename_btnMouseClicked
-         //TODO: verificar a opção do dialog
-         String filename = JOptionPane.showInputDialog(this, "Insert a new filename: ","New filename",JOptionPane.PLAIN_MESSAGE);
-         if (filename!=null){
-            String selectedValue = myDocumentsList.getSelectedValue();
-            int index = myDocumentsList.getSelectedIndex();
-            if (!selectedValue.isEmpty()) {
-               int id = Integer.parseInt(selectedValue.split("/")[0]);
-               UpdateFileNameRequest updateFileNameRequest = UpdateFileNameRequest.newBuilder().setId(id).setName(filename).setUsername(clientApp.getUsername()).setToken(clientApp.getToken()).build();
-               try {
-                  clientApp.getFrontend().updateFileName(updateFileNameRequest);
-                  clientApp.updateFileName(id, filename);
-                  setMyDocumentsList(clientApp.getMyDocs());
-                  myDocumentsList.setSelectedIndex(index);
-               }
-               catch (StatusRuntimeException e) {
-                   System.out.println("Caught exception with description: " +
-                   e.getStatus().getDescription());
-                   JOptionPane.showMessageDialog(null, e.getStatus().getDescription());
+        if(rename_btn.isEnabled()) {
+            String filename = JOptionPane.showInputDialog(this, "Insert a new filename: ","New filename",JOptionPane.PLAIN_MESSAGE);
+            if (filename!=null){
+               String selectedValue = myDocumentsList.getSelectedValue();
+               int index = myDocumentsList.getSelectedIndex();
+               if (!selectedValue.isEmpty()) {
+                  int id = Integer.parseInt(selectedValue.split("/")[0]);
+                  UpdateFileNameRequest updateFileNameRequest = UpdateFileNameRequest.newBuilder().setId(id).setName(filename).setUsername(clientApp.getUsername()).setToken(clientApp.getToken()).build();
+                  try {
+                     clientApp.getFrontend().updateFileName(updateFileNameRequest);
+                     clientApp.updateFileName(id, filename);
+                     setMyDocumentsList(clientApp.getMyDocs());
+                     myDocumentsList.setSelectedIndex(index);
+                  }
+                  catch (StatusRuntimeException e) {
+                      System.out.println("Caught exception with description: " +
+                      e.getStatus().getDescription());
+                      JOptionPane.showMessageDialog(null, e.getStatus().getDescription());
+                  }
                }
             }
-         }
+        }
+         
         
        
     }//GEN-LAST:event_rename_btnMouseClicked
 
     private void share_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_share_btnMouseClicked
-        String selectedValue = myDocumentsList.getSelectedValue();
-        if (!selectedValue.isEmpty()) {
-            int id = Integer.parseInt(selectedValue.split("/")[0]);
-            SharedDocUsersRequest request = SharedDocUsersRequest.newBuilder()
-            .setUsername(clientApp.getUsername())
-            .setId(id)
-            .setToken(clientApp.getToken()).build();
-            try{
-                SharedDocUsersResponse response = clientApp.getFrontend().docUsersList(request);
-                List<UserGrpc> listGrpc = response.getUsersList();
-                ArrayList<String> users = new ArrayList<>();
-                for (UserGrpc userGrpc: listGrpc){
-                    users.add(userGrpc.getPermission()+"/"+userGrpc.getUsername());
+        if(share_btn.isEnabled()){
+            String selectedValue = myDocumentsList.getSelectedValue();
+            if (!selectedValue.isEmpty()) {
+                int id = Integer.parseInt(selectedValue.split("/")[0]);
+                SharedDocUsersRequest request = SharedDocUsersRequest.newBuilder()
+                .setUsername(clientApp.getUsername())
+                .setId(id)
+                .setToken(clientApp.getToken()).build();
+                try{
+                    SharedDocUsersResponse response = clientApp.getFrontend().docUsersList(request);
+                    List<UserGrpc> listGrpc = response.getUsersList();
+                    ArrayList<String> users = new ArrayList<>();
+                    for (UserGrpc userGrpc: listGrpc){
+                        users.add(userGrpc.getPermission()+"/"+userGrpc.getUsername());
+                    }
+                    ShareForm shareForm = clientApp.getShare();
+                    shareForm.setUsersList(users);
+                    String filename = clientApp.getFile(id).getName();
+                    shareForm.setFileNameTf(filename);
+                    shareForm.setId(id);
+                    clientApp.switchForm(this, shareForm);
+    
+                }catch (StatusRuntimeException e) {
+                    System.out.println("Caught exception with description: " +
+                    e.getStatus().getDescription());
+                    JOptionPane.showMessageDialog(null, e.getStatus().getDescription());
                 }
-                ShareForm shareForm = clientApp.getShare();
-                shareForm.setUsersList(users);
-                String filename = clientApp.getFile(id).getName();
-                shareForm.setFileNameTf(filename);
-                shareForm.setId(id);
-                clientApp.switchForm(this, shareForm);
-
-            }catch (StatusRuntimeException e) {
-                System.out.println("Caught exception with description: " +
-                e.getStatus().getDescription());
-                JOptionPane.showMessageDialog(null, e.getStatus().getDescription());
             }
         }
+       
                
         
     }//GEN-LAST:event_share_btnMouseClicked

@@ -4,4 +4,4 @@ target/
 *.iml
 files/
 script.sh
-
+.vscode/

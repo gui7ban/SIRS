@@ -32,6 +32,7 @@ public class BackupServer {
             this.keyPair = AsymmetricCryptoOperations.generateKeyPair();
         } catch (NoSuchAlgorithmException e) {
             System.out.println("Failed to generate key pair for backup server.");
+            System.exit(-1);
         }
     }
 
@@ -68,9 +69,7 @@ public class BackupServer {
 
     public int handshake(byte[] secretKey, byte[] initializationVector, int nonce, byte[] signature, byte[] request)
             throws BackupServerException {
-        this.secretKey = SymmetricCryptoOperations.getKeyFromBytes(secretKey);
-        this.serverInitializationVector = initializationVector;
-
+       
         if (this.nonces.containsKey(nonce))
             throw new BackupServerException("This nonce was already used! Possible replay attack detected.");
 
@@ -83,7 +82,9 @@ public class BackupServer {
 
             if (!validSignature)
                 throw new BackupServerException("Invalid server signature. Rejected.");
-
+            
+            this.secretKey = SymmetricCryptoOperations.getKeyFromBytes(secretKey);
+            this.serverInitializationVector = initializationVector;
             this.nonces.put(nonce, true);
             this.currentNonce = nonce;
             return this.getNextNonce();
@@ -138,3 +139,4 @@ public class BackupServer {
     }
 
 }
+
