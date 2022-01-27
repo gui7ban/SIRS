@@ -9,10 +9,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.sql.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ServerRepo {
 
@@ -53,7 +50,12 @@ public class ServerRepo {
     }
 
     private Connection newConnection() throws SQLException {
-        return DriverManager.getConnection(this.dbUrl, this.dbUsername, this.dbPassword);
+        Properties properties = new Properties();
+        properties.setProperty("user", this.dbUsername);
+        properties.setProperty("password", this.dbPassword);
+        properties.setProperty("ssl", "true");
+        properties.setProperty("sslmode", "require");
+        return DriverManager.getConnection(this.dbUrl, properties);
     }
 
     private void closeConnection(){
