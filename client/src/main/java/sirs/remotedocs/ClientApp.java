@@ -10,6 +10,8 @@ import javax.swing.*;
 
 import java.util.Map;
 import java.util.TreeMap;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.ArrayList;
 
 public class ClientApp {
@@ -22,9 +24,10 @@ public class ClientApp {
     private ShareForm share;
     private String token;
     private String username;
+    private PrivateKey privateKey = null;
+    private PublicKey publicKey = null;
     private Map<Integer,FileDetails> files = new TreeMap<>();
  
-
     
     public ClientApp(String host, int port){
         frontend = new ServerFrontend(host, port);
@@ -56,6 +59,15 @@ public class ClientApp {
         }
         return result.stream().toArray(String[]::new);
 
+        
+    }
+
+    public void setPublicKey(PublicKey publicKey){
+        this.publicKey = publicKey;
+    }
+
+    public void setPrivateKey(PrivateKey privateKey){
+        this.privateKey = privateKey;
     }
 
     public void loginOrRegister(String username, String token) {
@@ -81,6 +93,14 @@ public class ClientApp {
         this.files.put(id, file);
     }
     /*--------------------GETTERS--------------------*/
+
+    public PublicKey getPublicKey(){
+        return publicKey;
+    }
+
+    public PrivateKey getPrivateKey(){
+        return privateKey;
+    }
    
     public FileDetails getFile(int id){
         return files.get(id);

@@ -19,7 +19,8 @@ public enum ErrorMessage {
     UNAUTHORIZED_FILE_DELETION("You do not have enough permissions to delete this file."),
     USER_ALREADY_EXISTS("The chosen username is not valid, please try another username."), 
     USER_DOESNT_EXIST("This username do not exist, please try another one."), 
-    USER_ALREADY_HAVE_PERMISSION("This user already have access to this file.");
+    USER_ALREADY_HAVE_PERMISSION("This user already have access to this file."),
+    ILLEGAL_MODIFICATION("This file was tampered, send us an email to restore the file.");
     
     public final String label;
 

@@ -49,7 +49,7 @@ public class Server {
 			this.keyPair = AsymmetricCryptoOperations.generateKeyPair();
 			this.exchangePublicKeys();
 			this.handshake();
-
+			
 			final int baseDuration = 60 * 1000;
 			final Server thisServer = this;
 			Timer timer = new Timer();
@@ -85,7 +85,7 @@ public class Server {
 
 	public void handshake() {
 		try {
-			this.backupServerSecretKey = SymmetricCryptoOperations.generateKey();
+			this.backupServerSecretKey = SymmetricCryptoOperations.getRandomSecretKey();
 			this.backupServerIV = SymmetricCryptoOperations.generateIV();
 			this.currentNonce = new SecureRandom().nextInt(MAX_NONCE);
 
@@ -282,7 +282,7 @@ public class Server {
 		}
 	}
 	
-	public String register(String name, String password) throws RemoteDocsException {
+	public String register(String name, String password, byte[] publicKey, byte[] privateKey, byte[] salt) throws RemoteDocsException {
 		try {
 			if(name.isBlank())
 				throw new RemoteDocsException(ErrorMessage.INVALID_USERNAME);
@@ -292,15 +292,16 @@ public class Server {
 			else if(password != null && password.length() < 7)
 				throw new RemoteDocsException(ErrorMessage.INVALID_PASSWORD);
 			else {
-				byte[] newSalt = HashOperations.generateSalt();
-				String saltInString = Base64.getEncoder().encodeToString(newSalt);
-				newSalt = Base64.getDecoder().decode(saltInString);
-				String hashedPassword = HashOperations.digest(password,newSalt);
-				this.serverRepo.registerUser(name, hashedPassword, saltInString);
+				String saltInString = Base64.getEncoder().encodeToString(salt);
+				String hashedPassword = HashOperations.digest(password,salt);
+				this.serverRepo.registerUser(name,
+					hashedPassword,
+					saltInString,
+					Base64.getEncoder().encodeToString(publicKey),
+					Base64.getEncoder().encodeToString(privateKey));
 
 				// Generate access token for session:
 				String accessToken = Base64.getEncoder().encodeToString(HashOperations.generateSalt());
-
 				// Add the token to the access tokens map:
 				this.accessTokens.put(name, accessToken);
 				return accessToken;
@@ -311,7 +312,8 @@ public class Server {
 		}
 	}
 
-	public FileDetails createFile(String name, String username, String token) throws RemoteDocsException {
+
+	public FileDetails createFile(String name, String username, String token, byte[] fileKey, byte[] iv) throws RemoteDocsException {
 		if (!this.isSessionValid(username, token))
 			throw new RemoteDocsException(ErrorMessage.INVALID_SESSION);
 		if (name.isBlank())
@@ -324,7 +326,9 @@ public class Server {
 			boolean fileExists = this.serverRepo.fileExists(username, name);
 			if(fileExists || !newFile.createNewFile())
 				throw new RemoteDocsException(ErrorMessage.FILE_ALREADY_EXISTS);
-			return this.serverRepo.createFile(nextId, name, username);
+			return this.serverRepo.createFile(nextId, 
+			name, username, Base64.getEncoder().encodeToString(fileKey),
+			Base64.getEncoder().encodeToString(iv));
 			 
 		} catch (IOException | SQLException e) {
 			this.logger.log(e.getMessage());
@@ -347,15 +351,12 @@ public class Server {
 			else if (permission == 1)
 				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_WRITE);
 			
-			
-			String fileDigest = HashOperations.digest(content);
-			this.serverRepo.updateFileDigest(id, fileDigest, username);
-			
-			
 			FileOutputStream out = new FileOutputStream(file);
 			out.write(content);
 			out.close();
-
+				
+			String fileDigest = HashOperations.digest(content);
+			this.serverRepo.updateFileDigest(id, fileDigest, username);
 			
 		} catch (IOException | NoSuchAlgorithmException | SQLException e) {
 			this.logger.log(e.getMessage());
@@ -371,17 +372,23 @@ public class Server {
 			FileDetails fileDetails = this.serverRepo.getFileDetails(id, username);
 			if (fileDetails == null)
 				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_ACCESS);
-			// TODO: check digest
+				
 			File file = new File(FILES_DIR + id);
 			if (!file.exists())
 				throw new RemoteDocsException(ErrorMessage.FILE_DOESNT_EXIST);
-
+			// TODO: VER TAMANHO DAS KEYS NO SCHEMAAAA
+			
 			FileInputStream in = new FileInputStream(file);
-			fileDetails.setContent(in.readAllBytes());
+			byte[] content = in.readAllBytes();
 			in.close();
+			String fileDigest = HashOperations.digest(content);
+			if (!fileDigest.equals(fileDetails.getDigest()))
+				throw new RemoteDocsException(ErrorMessage.ILLEGAL_MODIFICATION);
+
+			fileDetails.setContent(content);
 
 			return fileDetails;
-		} catch (SQLException | IOException e) {
+		} catch (SQLException | IOException | NoSuchAlgorithmException e) {
 			this.logger.log(e.getMessage());
 			throw new RemoteDocsException(ErrorMessage.INTERNAL_ERROR);
 		}
@@ -457,7 +464,7 @@ public class Server {
 		}
 	}
 
-	public void addPermission(String owner, String token, String username, int id, int permission) throws RemoteDocsException {
+	public void addPermission(String owner, String token, String username, int id, int permission, byte[] iv, byte[] fileKey) throws RemoteDocsException {
 		if (!this.isSessionValid(owner, token))
 			throw new RemoteDocsException(ErrorMessage.INVALID_SESSION);
 		try {
@@ -469,7 +476,7 @@ public class Server {
 			User user = this.serverRepo.getUser(username);
 			if (user == null)
 				throw new RemoteDocsException(ErrorMessage.USER_DOESNT_EXIST);
-			this.serverRepo.addPermission(username, id, permission,true);
+			this.serverRepo.addPermission(username, id, permission, Base64.getEncoder().encodeToString(fileKey), Base64.getEncoder().encodeToString(iv), true);
 		} catch (SQLException e) {
 			this.logger.log(e.getMessage());
 			if(e.getMessage().contains("ERROR: duplicate key value violates unique constraint"))
@@ -498,6 +505,40 @@ public class Server {
 		}
 	}
 
+
+	
+
+	public User getUser(String username) throws RemoteDocsException {
+		try {
+			return this.serverRepo.getUser(username);
+		} catch (SQLException e) {
+			this.logger.log(e.getMessage());
+			throw new RemoteDocsException(ErrorMessage.INTERNAL_ERROR);
+		}
+	}
+
+
+	public List<Object> getPublicKey(String owner, String token, String username, int id) throws RemoteDocsException {
+		if (!this.isSessionValid(owner, token))
+			throw new RemoteDocsException(ErrorMessage.INVALID_SESSION);
+		try {
+			ArrayList<Object> info = new ArrayList<>();
+			FileDetails details = this.serverRepo.getSharedKey(owner,id);
+			if (details == null)
+				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_ACCESS);
+			else if (details.getPermission() != 0)
+				throw new RemoteDocsException(ErrorMessage.UNAUTHORIZED_FILE_PERMISSIONS);
+			User user = this.serverRepo.getUser(username);
+			if (user == null)
+				throw new RemoteDocsException(ErrorMessage.USER_DOESNT_EXIST);
+			info.add(user);
+			info.add(details);
+			return info;
+		} catch (SQLException e) {
+			this.logger.log(e.getMessage());
+			throw new RemoteDocsException(ErrorMessage.INTERNAL_ERROR);
+		}
+	}
 
 	public synchronized String ping() {
 		return "I'm alive!";

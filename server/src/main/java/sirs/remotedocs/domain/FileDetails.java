@@ -12,6 +12,7 @@ public class FileDetails {
     private String sharedKey;
     private int permission;
     private String owner;
+    private String iv;
    
     private byte[] content;
     // Response to login 
@@ -21,16 +22,19 @@ public class FileDetails {
         this.permission = permission;
     }
     // GetDocument aka Download
-    public FileDetails(String key, String owner, String last_updater, LocalDateTime time_change){
+    public FileDetails(String digest, String key, String owner, String iv, String last_updater, LocalDateTime time_change){
+        this.digest = digest;
         this.sharedKey = key;
         this.owner = owner;
+        this.iv = iv;
         this.last_updater = last_updater;
         this.time_change = time_change;
     }
     
 
-    public FileDetails(String sharedKey, int permission) {
+    public FileDetails(String sharedKey, String iv, int permission) {
         this.sharedKey = sharedKey;
+        this.iv = iv;
         this.permission = permission;
     }
     //Response to create file
@@ -39,8 +43,14 @@ public class FileDetails {
         this.time_change = time_change;
     }
 
+    
     public int getId() {
         return id;
+    }
+
+
+    public String getIv() {
+        return iv;
     }
 
     public String getName() {

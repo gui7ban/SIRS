@@ -7,9 +7,15 @@ package sirs.remotedocs;
 import java.util.List;
 
 import java.awt.Component;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
 
 import javax.swing.JList;
-
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
@@ -17,7 +23,10 @@ import javax.swing.JOptionPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import com.google.protobuf.ByteString;
+
 import io.grpc.StatusRuntimeException;
+import sirs.remotedocs.crypto.AsymmetricCryptoOperations;
 import sirs.remotedocs.grpc.Contract.*;
 
 /**
@@ -259,22 +268,50 @@ public class ShareForm extends javax.swing.JFrame {
                 newPermission = 2;
             else   
                 newPermission = 1;
-            AddPermissionUserRequest request = AddPermissionUserRequest.newBuilder()
-            .setOwner(clientApp.getUsername())
-            .setId(this.id)
-            .setPermission(newPermission)
-            .setUsername(username)
-            .setToken(clientApp.getToken()).build();
             try {
+                GetPublicKeyRequest publicKeyRequest = GetPublicKeyRequest.newBuilder()
+                .setOwner(clientApp.getUsername())
+                .setToken(clientApp.getToken())
+                .setUsername(username)
+                .setFileId(this.id).build();
+                GetPublicKeyResponse response = clientApp.getFrontend().getPublicKey(publicKeyRequest);
+                PublicKey publicKey = AsymmetricCryptoOperations.getPublicKeyFromBytes(response.getPublicKey().toByteArray());
+                
+                byte[] fileKeyEncrypted = response.getFileKey().toByteArray();
+                byte[] fileKeyBytes = AsymmetricCryptoOperations.decrypt(fileKeyEncrypted, clientApp.getPrivateKey());
+                fileKeyEncrypted = AsymmetricCryptoOperations.encrypt(fileKeyBytes, publicKey);
+                
+                
+                byte[] ivEncrypted = response.getIv().toByteArray();
+                byte[] ivBytes = AsymmetricCryptoOperations.decrypt(ivEncrypted, clientApp.getPrivateKey());
+                ivEncrypted = AsymmetricCryptoOperations.encrypt(ivBytes, publicKey);
+                
+                AddPermissionUserRequest request = AddPermissionUserRequest.newBuilder()
+                .setOwner(clientApp.getUsername())
+                .setId(this.id)
+                .setPermission(newPermission)
+                .setUsername(username)
+                .setToken(clientApp.getToken())
+                .setIv(ByteString.copyFrom(ivEncrypted))
+                .setFileKey(ByteString.copyFrom(fileKeyEncrypted))
+                .build();
                 clientApp.getFrontend().addPermission(request);
                 DefaultListModel<String> model = (DefaultListModel<String>)sharedWithList.getModel();                
                 model.addElement(newPermission+"/"+username);
                 sharedWithList.setSelectedIndex(model.size()-1);
-            
-            }catch (StatusRuntimeException e) {
+
+            }
+            catch (StatusRuntimeException e) {
                 System.out.println("Caught exception with description: " +
                 e.getStatus().getDescription());
                 JOptionPane.showMessageDialog(null, e.getStatus().getDescription());
+            } catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException
+            | NoSuchPaddingException | IllegalBlockSizeException
+            | BadPaddingException e) {
+                System.out.println("Caught exception with description: " +
+			    e.getMessage());
+                JOptionPane.showMessageDialog(null, "There was an error on the server which prevented the operation from being executed.");
+            
             }
         }
     }//GEN-LAST:event_add_btnMouseClicked

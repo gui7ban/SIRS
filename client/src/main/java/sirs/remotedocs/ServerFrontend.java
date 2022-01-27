@@ -55,6 +55,8 @@ public class ServerFrontend {
     
     public DeletePermissionUserResponse deletePermission(DeletePermissionUserRequest request){ return stub.deletePermission(request); }
 
+    public GetPublicKeyResponse getPublicKey(GetPublicKeyRequest request) { return stub.getPublicKey(request); }
+
     public void channelEnd() {
         channel.shutdownNow();
     }

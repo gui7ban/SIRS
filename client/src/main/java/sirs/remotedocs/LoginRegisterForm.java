@@ -4,14 +4,33 @@
  */
 package sirs.remotedocs;
 
+import sirs.remotedocs.crypto.AsymmetricCryptoOperations;
+import sirs.remotedocs.crypto.HashOperations;
+import sirs.remotedocs.crypto.SymmetricCryptoOperations;
 import sirs.remotedocs.grpc.Contract.*;
 import io.grpc.StatusRuntimeException;
-import java.util.ArrayList;
+
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 import javax.swing.JOptionPane;
+
+import com.google.protobuf.ByteString;
+
 
 /**
  *
@@ -225,6 +244,19 @@ public class LoginRegisterForm extends javax.swing.JFrame {
             LoginRequest loginRequest = LoginRequest.newBuilder().setUsername(username).setPassword(password).build();
 		    try {
 			    LoginResponse loginResponse = clientApp.getFrontend().login(loginRequest);
+                PublicKey publicKey = AsymmetricCryptoOperations.getPublicKeyFromBytes(loginResponse.getPublicKey().toByteArray());
+                
+                byte[] salt = loginResponse.getSalt().toByteArray();
+                SecretKey secretKey = SymmetricCryptoOperations.getSecretKey(password, salt);
+                
+                byte[] privateKeyBytes = SymmetricCryptoOperations.decrypt(
+                    loginResponse.getPrivateKey().toByteArray(),
+                    secretKey, new IvParameterSpec(salt));
+                PrivateKey privateKey = AsymmetricCryptoOperations.getPrivateKeyFromBytes(privateKeyBytes);
+                    
+                clientApp.setPublicKey(publicKey);
+                clientApp.setPrivateKey(privateKey);
+
                 password_tf.setText("");
                 username_tf.setText("Username");
                 
@@ -249,13 +281,41 @@ public class LoginRegisterForm extends javax.swing.JFrame {
 			    e.getStatus().getDescription());
                 JOptionPane.showMessageDialog(null, e.getStatus().getDescription());
 		    }
+            catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException | NoSuchPaddingException | InvalidAlgorithmParameterException | BadPaddingException | IllegalBlockSizeException e) {
+                System.out.println("Caught exception with description: " +
+			    e.getMessage());
+                JOptionPane.showMessageDialog(null, "There was an error on the server which prevented the operation from being executed.");
+            }
         }
         else{
-            RegisterRequest registerRequest = RegisterRequest.newBuilder().setUsername(username).setPassword(password).build();
-		    try {
+            
+            try {
+                KeyPair keyPair = AsymmetricCryptoOperations.generateKeyPair();
+                PublicKey publicKey = keyPair.getPublic();
+                PrivateKey privateKey = keyPair.getPrivate();
+                clientApp.setPrivateKey(privateKey);
+                clientApp.setPublicKey(publicKey);
+				
+                byte[] newSalt = HashOperations.generateSalt();
+                String saltInString = Base64.getEncoder().encodeToString(newSalt);
+				newSalt = Base64.getDecoder().decode(saltInString);
+
+                SecretKey secretKey = SymmetricCryptoOperations.getSecretKey(password, newSalt);
+                byte[] privateKeyBytes = privateKey.getEncoded();
+                byte[] privateKeyEncrypted = SymmetricCryptoOperations.encrypt(privateKeyBytes, newSalt, secretKey);
+                RegisterRequest registerRequest = RegisterRequest.newBuilder()
+                .setUsername(username)
+                .setPassword(password)
+                .setPublicKey(ByteString.copyFrom(publicKey.getEncoded()))
+                .setPrivateKey(ByteString.copyFrom(privateKeyEncrypted))
+                .setSalt(ByteString.copyFrom(newSalt))
+                .build();
+
 			    RegisterResponse registerResponse = clientApp.getFrontend().register(registerRequest);
+ 
                 password_tf.setText("");
                 username_tf.setText("Username");
+ 
                 clientApp.loginOrRegister(username, registerResponse.getToken());
                 clientApp.switchForm(this, clientApp.getDoclist());
                 
@@ -264,7 +324,16 @@ public class LoginRegisterForm extends javax.swing.JFrame {
 			    System.out.println("Caught exception with description: " +
 			    e.getStatus().getDescription());
                 JOptionPane.showMessageDialog(null, e.getStatus().getDescription());
-		    }
+		    } catch (InvalidKeySpecException | NoSuchAlgorithmException
+            | InvalidKeyException | NoSuchPaddingException
+            | InvalidAlgorithmParameterException | BadPaddingException
+            | IllegalBlockSizeException e) {
+                System.out.println("Caught exception with description: " +
+			   "internal error");
+               e.printStackTrace();
+               //TODO: o user pode já ter sido criado no server reverter isso.
+                JOptionPane.showMessageDialog(null, "There was an error on the server which prevented the operation from being executed.");
+            }
         }     
     }//GEN-LAST:event_LoginRegister_btnMouseClicked
 

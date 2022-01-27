@@ -6,7 +6,8 @@ CREATE TABLE remotedocs_users
     username VARCHAR(100) NOT NULL PRIMARY KEY,
     password CHAR(44) NOT NULL,
     salt     CHAR(24) NOT NULL,
-    public_key VARCHAR(5000) NOT NULL
+    public_key VARCHAR(5000) NOT NULL,
+    private_key VARCHAR(5000) NOT NULL
 );
 
 CREATE TABLE remotedocs_files
@@ -24,6 +25,7 @@ CREATE TABLE remotedocs_permissions
     fileId     INTEGER NOT NULL,
     permission INTEGER NOT NULL,
     sharedKey  VARCHAR(500) NOT NULL,
+    iv         VARCHAR(500) NOT NULL,
     PRIMARY KEY (userId, fileId),
     FOREIGN KEY (userId)
         REFERENCES remotedocs_users(username) ON DELETE CASCADE ON UPDATE CASCADE,

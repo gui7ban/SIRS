@@ -8,7 +8,6 @@ import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.Base64;
 
 public class AsymmetricCryptoOperations {
     private static final String SIGN_ALGORITHM = "SHA256withRSA";
@@ -24,6 +23,11 @@ public class AsymmetricCryptoOperations {
     public static PublicKey getPublicKeyFromBytes(byte[] key) throws NoSuchAlgorithmException, InvalidKeySpecException {
         KeyFactory keyFactory = KeyFactory.getInstance(ENCRYPTION_ALGORITHM);
         return keyFactory.generatePublic(new X509EncodedKeySpec(key));
+    }
+
+    public static PrivateKey getPrivateKeyFromBytes(byte[] key) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        KeyFactory keyFactory = KeyFactory.getInstance(ENCRYPTION_ALGORITHM);
+        return keyFactory.generatePrivate(new PKCS8EncodedKeySpec(key));
     }
 
     public static byte[] encrypt(byte[] content, Key key)

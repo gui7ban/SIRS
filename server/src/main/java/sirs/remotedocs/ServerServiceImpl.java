@@ -12,8 +12,8 @@ import sirs.remotedocs.grpc.RemoteDocsGrpc;
 
 import static io.grpc.Status.INVALID_ARGUMENT;
 
-import java.time.Instant;
 import java.time.ZoneId;
+import java.util.Base64;
 import java.util.List;
 
 public class ServerServiceImpl extends RemoteDocsGrpc.RemoteDocsImplBase
@@ -38,7 +38,13 @@ public class ServerServiceImpl extends RemoteDocsGrpc.RemoteDocsImplBase
 			String username = request.getUsername();
 			String accessToken = server.login(username, request.getPassword());
 			List<FileDetails> listOfDocuments = server.getListDocuments(username, null);
-			LoginResponse.Builder builder = LoginResponse.newBuilder().setToken(accessToken);
+			User user = server.getUser(username);
+			LoginResponse.Builder builder = LoginResponse.newBuilder()
+			.setToken(accessToken)
+			.setSalt(ByteString.copyFrom(Base64.getDecoder().decode(user.getSalt())))
+			.setPublicKey(ByteString.copyFrom(Base64.getDecoder().decode(user.getPublicKey())))
+			.setPrivateKey(ByteString.copyFrom(Base64.getDecoder().decode(user.getPrivateKey())));
+			
 
 			for(FileDetails document: listOfDocuments) {
 				DocumentInfo docGrpc = DocumentInfo
@@ -63,8 +69,15 @@ public class ServerServiceImpl extends RemoteDocsGrpc.RemoteDocsImplBase
 	@Override
 	public void register(RegisterRequest request, StreamObserver<RegisterResponse> responseObserver) {
 		try {
-			String accessToken = server.register(request.getUsername(), request.getPassword());
-			responseObserver.onNext(RegisterResponse.newBuilder().setToken(accessToken).build());
+			String accessToken = server.register(request.getUsername(),
+				request.getPassword(),
+				request.getPublicKey().toByteArray(),
+				request.getPrivateKey().toByteArray(),
+				request.getSalt().toByteArray());
+			
+			responseObserver.onNext(RegisterResponse.newBuilder()
+			.setToken(accessToken)
+			.build());
 			responseObserver.onCompleted();
 		}
 		catch (RemoteDocsException e) {
@@ -75,7 +88,12 @@ public class ServerServiceImpl extends RemoteDocsGrpc.RemoteDocsImplBase
 	@Override
 	public void createFile(CreateFileRequest request, StreamObserver<CreateFileResponse> responseObserver) {
 		try {
-			FileDetails fileDetails = server.createFile(request.getName(), request.getUsername(), request.getToken());
+			FileDetails fileDetails = server.createFile(request.getName(), 
+				request.getUsername(),
+				request.getToken(),
+				request.getFileKey().toByteArray(),
+				request.getIv().toByteArray()
+				);
 			Timestamp ts = Timestamp.newBuilder().setSeconds(fileDetails
 						.getTimeChange()
 						.atZone(ZoneId.systemDefault())
@@ -122,10 +140,11 @@ public class ServerServiceImpl extends RemoteDocsGrpc.RemoteDocsImplBase
 			DownloadResponse response = DownloadResponse
 					.newBuilder()
 					.setContent(ByteString.copyFrom(fileDetails.getContent()))
-					.setKey(fileDetails.getSharedKey())
+					.setKey(ByteString.copyFrom(Base64.getDecoder().decode(fileDetails.getSharedKey())))
 					.setOwner(fileDetails.getOwner())
 					.setLastUpdater(fileDetails.getLastUpdater())
 					.setLastChange(ts)
+					.setIv(ByteString.copyFrom(Base64.getDecoder().decode(fileDetails.getIv())))
 					.build();
 
 			responseObserver.onNext(response);
@@ -264,7 +283,9 @@ public class ServerServiceImpl extends RemoteDocsGrpc.RemoteDocsImplBase
 					request.getToken(),
 					request.getUsername(),
 					request.getId(),
-					request.getPermission()
+					request.getPermission(),
+					request.getIv().toByteArray(),
+					request.getFileKey().toByteArray()
 
 			);
 
@@ -286,6 +307,30 @@ public class ServerServiceImpl extends RemoteDocsGrpc.RemoteDocsImplBase
 			);
 
 			responseObserver.onNext(DeletePermissionUserResponse.newBuilder().build());
+			responseObserver.onCompleted();
+		} catch (RemoteDocsException e) {
+			responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
+		}
+	}
+
+	@Override
+	public void getPublicKey(GetPublicKeyRequest request, StreamObserver<GetPublicKeyResponse> responseObserver) {
+		try {
+			List<Object> info = server.getPublicKey(
+									request.getOwner(),
+									request.getToken(),
+									request.getUsername(),
+									request.getFileId()
+								);
+			User user = (User)info.get(0);
+			FileDetails details = (FileDetails)info.get(1);
+
+
+			responseObserver.onNext(GetPublicKeyResponse.newBuilder()
+			.setIv(ByteString.copyFrom(Base64.getDecoder().decode(details.getIv())))
+			.setFileKey(ByteString.copyFrom(Base64.getDecoder().decode(details.getSharedKey())))
+			.setPublicKey(ByteString.copyFrom(Base64.getDecoder().decode(user.getPublicKey())))
+			.build());
 			responseObserver.onCompleted();
 		} catch (RemoteDocsException e) {
 			responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());

@@ -6,9 +6,21 @@ package sirs.remotedocs;
 
 import com.google.protobuf.ByteString;
 import io.grpc.StatusRuntimeException;
+
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 import javax.swing.JOptionPane;
+
+import sirs.remotedocs.crypto.SymmetricCryptoOperations;
 import sirs.remotedocs.grpc.Contract.UploadRequest;
 
 
@@ -19,6 +31,8 @@ import sirs.remotedocs.grpc.Contract.UploadRequest;
 public class EditDocumentForm extends javax.swing.JFrame {
     private ClientApp clientApp;
     private int id;
+    private SecretKey fileKey;
+    private IvParameterSpec iv;
    /**
      * Creates new form EditDocumentForm
      * @param clientApp
@@ -43,6 +57,14 @@ public class EditDocumentForm extends javax.swing.JFrame {
 
     public void setDocTitle(String filename){
         this.setTitle(filename);
+    }
+
+    public void setFileKey(SecretKey fileKey){
+        this.fileKey = fileKey;
+    }
+
+    public void setIv(IvParameterSpec iv){
+        this.iv = iv;
     }
     
     public void setDateChange(LocalDateTime timestamp){
@@ -207,11 +229,16 @@ public class EditDocumentForm extends javax.swing.JFrame {
     }//GEN-LAST:event_cancel_btnMouseClicked
 
     private void save_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_save_btnMouseClicked
-        String content = editorPane.getText();
-        //TODO: verificar se content é igual content anterior
-
-        UploadRequest uploadRequest = UploadRequest.newBuilder().setId(this.id).setContent(ByteString.copyFromUtf8(content)).setUsername(clientApp.getUsername()).setToken(clientApp.getToken()).build();
         try {
+            String content = editorPane.getText();
+            byte[] contentInBytes = content.getBytes();
+            byte[] contentEncrypted = SymmetricCryptoOperations.encrypt(contentInBytes, iv.getIV(), fileKey);
+            UploadRequest uploadRequest = UploadRequest.newBuilder()
+            .setId(this.id)
+            .setContent(ByteString.copyFrom(contentEncrypted))
+            .setUsername(clientApp.getUsername())
+            .setToken(clientApp.getToken())
+            .build();
             clientApp.getFrontend().upload(uploadRequest);
             DocumentsList docForm = clientApp.getDoclist();
             clientApp.switchForm(this, docForm);
@@ -221,6 +248,14 @@ public class EditDocumentForm extends javax.swing.JFrame {
             System.out.println("Caught exception with description: " +
             e.getStatus().getDescription());
             JOptionPane.showMessageDialog(null, e.getStatus().getDescription());
+        } catch (InvalidKeyException | NoSuchPaddingException 
+        | NoSuchAlgorithmException | InvalidAlgorithmParameterException 
+        | BadPaddingException | IllegalBlockSizeException e) {
+            System.out.println("Caught exception with description: " +
+			         "internal error");
+                     e.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "There was an error on the server which prevented the operation from being executed.");
+           
         }
     }//GEN-LAST:event_save_btnMouseClicked
 

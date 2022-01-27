@@ -5,6 +5,10 @@
 package sirs.remotedocs;
 
 import java.awt.Component;
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -13,14 +17,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+
+import com.google.protobuf.ByteString;
+
 import javax.swing.JList;
 
 import io.grpc.StatusRuntimeException;
+import sirs.remotedocs.crypto.AsymmetricCryptoOperations;
+import sirs.remotedocs.crypto.SymmetricCryptoOperations;
 import sirs.remotedocs.grpc.Contract.*;
 /**
  *
@@ -130,7 +144,13 @@ public class DocumentsList extends javax.swing.JFrame {
         myDocuments = new javax.swing.JScrollPane();
         myDocumentsList = new javax.swing.JList<>();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
+        setResizable(false);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         jPanel1.setBackground(new java.awt.Color(255, 102, 51));
 
@@ -286,8 +306,21 @@ public class DocumentsList extends javax.swing.JFrame {
     private void new_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_new_btnMouseClicked
         String filename = JOptionPane.showInputDialog(this, "Insert filename: ","New file",JOptionPane.PLAIN_MESSAGE);
         if (filename != null){
-            CreateFileRequest createFileRequest = CreateFileRequest.newBuilder().setName(filename).setUsername(clientApp.getUsername()).setToken(clientApp.getToken()).build();
             try {
+                SecretKey fileKey = SymmetricCryptoOperations.getRandomSecretKey();
+                byte[] fileKeyEncrypted = AsymmetricCryptoOperations.encrypt(fileKey.getEncoded(), clientApp.getPublicKey());
+               
+                IvParameterSpec iv = SymmetricCryptoOperations.generateIV();
+                byte[] ivEncrpyted = AsymmetricCryptoOperations.encrypt(iv.getIV(), clientApp.getPublicKey());
+               
+                CreateFileRequest createFileRequest = CreateFileRequest.newBuilder()
+                    .setName(filename)
+                    .setUsername(clientApp.getUsername())
+                    .setToken(clientApp.getToken())
+                    .setFileKey(ByteString.copyFrom(fileKeyEncrypted))
+                    .setIv(ByteString.copyFrom(ivEncrpyted))
+                    .build();
+
                 CreateFileResponse createFileResponse = clientApp.getFrontend().createFile(createFileRequest);
                 int id = createFileResponse.getId();
                 LocalDateTime timestamp = Instant.ofEpochSecond(createFileResponse.getCreationTime().getSeconds()).atZone(ZoneId.systemDefault()).toLocalDateTime();
@@ -301,6 +334,8 @@ public class DocumentsList extends javax.swing.JFrame {
                 editDocForm.setDateChange(timestamp);   
                 editDocForm.setTitle(filename);    
                 editDocForm.setPaneContent("");
+                editDocForm.setFileKey(fileKey);
+                editDocForm.setIv(iv);
                 myDocumentsList.setSelectedIndex(myDocumentsList.getModel().getSize() - 1);
                 clientApp.switchForm(this, editDocForm);
             }
@@ -308,6 +343,12 @@ public class DocumentsList extends javax.swing.JFrame {
                 System.out.println("Caught exception with description: " +
                 e.getStatus().getDescription());
                 JOptionPane.showMessageDialog(null, e.getStatus().getDescription());
+            } catch (NoSuchAlgorithmException | InvalidKeyException 
+            | NoSuchPaddingException | IllegalBlockSizeException
+            | BadPaddingException e) {
+                System.out.println("Caught exception with description: " +
+			    e.getMessage());
+                JOptionPane.showMessageDialog(null, "There was an error on the server which prevented the operation from being executed.");
             }
         }
         
@@ -328,13 +369,27 @@ public class DocumentsList extends javax.swing.JFrame {
                 try {
                     DownloadResponse downloadResponse = clientApp.getFrontend().download(downloadRequest);
                     EditDocumentForm editDocForm = clientApp.getEditdoc();
-                    String content = downloadResponse.getContent().toStringUtf8();
-                    editDocForm.setPaneContent(content);
+                    
+                    byte[] fileKeyEncrypted = downloadResponse.getKey().toByteArray();
+                    byte[] fileKeyBytes = AsymmetricCryptoOperations.decrypt(fileKeyEncrypted, clientApp.getPrivateKey());
+                    SecretKey fileKey = SymmetricCryptoOperations.getKeyFromBytes(fileKeyBytes);
+
+                    byte[] ivEncrypted = downloadResponse.getIv().toByteArray();
+                    byte[] ivBytes = AsymmetricCryptoOperations.decrypt(ivEncrypted, clientApp.getPrivateKey());
+                    
+                    IvParameterSpec iv = new IvParameterSpec(ivBytes);
+
+                    byte[] contentEncrypted = downloadResponse.getContent().toByteArray();
+                    byte[] content = SymmetricCryptoOperations.decrypt(contentEncrypted, fileKey, iv);
+                    String contentInString = new String(content, StandardCharsets.UTF_8);
+                    
+                    editDocForm.setPaneContent(contentInString);
                     editDocForm.setId(id);
-            
+                    editDocForm.setFileKey(fileKey);
+                    editDocForm.setIv(iv);
+
                     FileDetails details = clientApp.getFile(id);
                     
-                    details.setContent(downloadResponse.getContent().toByteArray());
                     LocalDateTime timestamp = Instant.ofEpochSecond(downloadResponse.getLastChange().getSeconds()).atZone(ZoneId.systemDefault()).toLocalDateTime();
     
                     editDocForm.setLastUpdater(downloadResponse.getLastUpdater());
@@ -376,6 +431,14 @@ public class DocumentsList extends javax.swing.JFrame {
                         e.getStatus().getDescription());
                         JOptionPane.showMessageDialog(null, e.getStatus().getDescription());
                     }
+                } catch (InvalidKeyException | NoSuchAlgorithmException |
+                NoSuchPaddingException | IllegalBlockSizeException |
+                BadPaddingException | InvalidAlgorithmParameterException e) {
+                    System.out.println("Caught exception with description: " +
+			         "internal error");
+                     e.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "There was an error on the server which prevented the operation from being executed.");
+           
                 }
             }
         
@@ -387,6 +450,8 @@ public class DocumentsList extends javax.swing.JFrame {
     private void logout_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_logout_btnMouseClicked
         String[] empty = {};
         clientApp.setFiles(new TreeMap<>());
+        clientApp.setPrivateKey(null);
+        clientApp.setPublicKey(null);
         setMyDocumentsList(empty);
         setSharedList(empty);
         disableButtons();

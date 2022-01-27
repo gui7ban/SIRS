@@ -128,7 +128,7 @@ public class BackupServer {
                 else
                     this.saveFile(fileInfo.getId(), fileInfo.getContent().toByteArray());
             }
-
+            
             this.nonces.put(nonce, true);
             this.currentNonce = nonce;
             return corruptedFiles;
