@@ -61,17 +61,24 @@ public class ServerRepo {
             try {
                 connection.close();
             } catch (SQLException e) { 
-                /* Ignored */}
+                this.logger.log(e.getMessage());
+            }
         }
+
         if (statement != null) {
             try {
                 statement.close();
-            } catch (SQLException e) { /* Ignored */}
+            } catch (SQLException e) {
+                this.logger.log(e.getMessage());
+            }
         }
+
         if (resultSet != null) {
             try {
                 resultSet.close();
-            } catch (SQLException e) { /* Ignored */}
+            } catch (SQLException e) {
+                this.logger.log(e.getMessage());
+            }
         }
     }
 
