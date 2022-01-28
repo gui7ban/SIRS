@@ -29,6 +29,10 @@ public class ServerRepo {
         this.dbDir = System.getenv("DB_DIR");
 
         try {
+            if (this.dbUrl == null || this.dbDir == null || this.dbUsername == null || this.dbPassword == null) {
+                this.logger.log("You must set the environment variables!");
+                System.exit(-1);
+            }
             connection = this.newConnection();
             this.logger.log("Connected to database successfully!");
 
