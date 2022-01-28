@@ -16,7 +16,9 @@ CREATE TABLE remotedocs_files
     name    VARCHAR(100) NOT NULL,
     digest  VARCHAR(500) NOT NULL,
     time_change timestamp NOT NULL DEFAULT now(),
-    last_updater VARCHAR(100) NOT NULL
+    last_updater VARCHAR(100) NOT NULL,
+    backup  boolean NOT NULL DEFAULT FALSE,
+    dirty boolean NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE remotedocs_permissions

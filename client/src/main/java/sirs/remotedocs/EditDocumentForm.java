@@ -33,6 +33,8 @@ public class EditDocumentForm extends javax.swing.JFrame {
     private int id;
     private SecretKey fileKey;
     private IvParameterSpec iv;
+    private String previousContent;
+    private boolean flag;
    /**
      * Creates new form EditDocumentForm
      * @param clientApp
@@ -43,8 +45,10 @@ public class EditDocumentForm extends javax.swing.JFrame {
         
     }
     
-    public void setPaneContent(String content){
+    public void setPaneContent(String content, boolean flag){
         editorPane.setText(content);
+        previousContent = content;
+        this.flag = flag;
     }
     
     public void setId(int id){
@@ -231,17 +235,19 @@ public class EditDocumentForm extends javax.swing.JFrame {
     private void save_btnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_save_btnMouseClicked
         try {
             String content = editorPane.getText();
-            byte[] contentInBytes = content.getBytes();
-            byte[] contentEncrypted = SymmetricCryptoOperations.encrypt(contentInBytes, iv.getIV(), fileKey);
-            UploadRequest uploadRequest = UploadRequest.newBuilder()
-            .setId(this.id)
-            .setContent(ByteString.copyFrom(contentEncrypted))
-            .setUsername(clientApp.getUsername())
-            .setToken(clientApp.getToken())
-            .build();
-            clientApp.getFrontend().upload(uploadRequest);
-            DocumentsList docForm = clientApp.getDoclist();
-            clientApp.switchForm(this, docForm);
+            if(!previousContent.equals(content) || flag) {
+                byte[] contentInBytes = content.getBytes();
+                byte[] contentEncrypted = SymmetricCryptoOperations.encrypt(contentInBytes, iv.getIV(), fileKey);
+                UploadRequest uploadRequest = UploadRequest.newBuilder()
+                .setId(this.id)
+                .setContent(ByteString.copyFrom(contentEncrypted))
+                .setUsername(clientApp.getUsername())
+                .setToken(clientApp.getToken())
+                .build();
+                clientApp.getFrontend().upload(uploadRequest);
+
+            }
+            clientApp.switchForm(this, clientApp.getDoclist());
         
         }
         catch (StatusRuntimeException e) {

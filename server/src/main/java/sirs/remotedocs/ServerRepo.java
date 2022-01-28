@@ -128,7 +128,7 @@ public class ServerRepo {
 
     public Map<Integer, String> getFilesDigests() throws SQLException {
         try{
-            String query = "SELECT id, digest FROM remotedocs_files";
+            String query = "SELECT id, digest FROM remotedocs_files WHERE backup = false and dirty = false";
 
             connection = this.newConnection();
             statement = connection.prepareStatement(query);
@@ -254,7 +254,7 @@ public class ServerRepo {
     }
     public void updateFileDigest(int id, String digest, String username) throws SQLException {
         try {
-            String query = "UPDATE remotedocs_files SET digest=?, time_change=now(), last_updater=? WHERE id=?";
+            String query = "UPDATE remotedocs_files SET backup = false, digest=?, time_change=now(), last_updater=? WHERE id=?";
 
             connection = this.newConnection();
             statement = connection.prepareStatement(query);
@@ -413,6 +413,51 @@ public class ServerRepo {
                 return new FileDetails(resultSet.getString("sharedKey"), resultSet.getString("iv") , resultSet.getInt("permission"));
 
             return null;
+        } finally {
+            closeConnection();
+        }
+    }
+
+    public void corruptedFiles(List<Integer> fileIds) throws SQLException {
+        try {
+            StringBuilder builder = new StringBuilder();
+
+            for( int i = 0 ; i < fileIds.size(); i++ ) 
+                builder.append("?,");
+            
+            String placeHolders =  builder.deleteCharAt( builder.length() -1 ).toString();
+          
+            String query = "UPDATE remotedocs_files SET dirty = true WHERE id in ("+ placeHolders +")";
+
+            connection = this.newConnection();
+            statement = connection.prepareStatement(query);
+            int index = 1;
+            for(int id : fileIds ) 
+                statement.setInt(index++, id);
+            
+            statement.executeUpdate();
+        } finally {
+            closeConnection();
+        }
+    }
+    public void backupUpdated(Set<Integer> fileIds) throws SQLException {
+        try {
+            StringBuilder builder = new StringBuilder();
+
+            for( int i = 0 ; i < fileIds.size(); i++ ) 
+                builder.append("?,");
+            
+            String placeHolders =  builder.deleteCharAt( builder.length() -1 ).toString();
+          
+            String query = "UPDATE remotedocs_files SET backup = true WHERE id in ("+ placeHolders +")";
+
+            connection = this.newConnection();
+            statement = connection.prepareStatement(query);
+            int index = 1;
+            for(int id : fileIds ) 
+                statement.setInt(index++, id);
+            
+            statement.executeUpdate();
         } finally {
             closeConnection();
         }

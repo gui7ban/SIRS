@@ -333,7 +333,7 @@ public class DocumentsList extends javax.swing.JFrame {
                 editDocForm.setOwner(username);
                 editDocForm.setDateChange(timestamp);   
                 editDocForm.setTitle(filename);    
-                editDocForm.setPaneContent("");
+                editDocForm.setPaneContent("", true);
                 editDocForm.setFileKey(fileKey);
                 editDocForm.setIv(iv);
                 myDocumentsList.setSelectedIndex(myDocumentsList.getModel().getSize() - 1);
@@ -383,7 +383,7 @@ public class DocumentsList extends javax.swing.JFrame {
                     byte[] content = SymmetricCryptoOperations.decrypt(contentEncrypted, fileKey, iv);
                     String contentInString = new String(content, StandardCharsets.UTF_8);
                     
-                    editDocForm.setPaneContent(contentInString);
+                    editDocForm.setPaneContent(contentInString, false);
                     editDocForm.setId(id);
                     editDocForm.setFileKey(fileKey);
                     editDocForm.setIv(iv);

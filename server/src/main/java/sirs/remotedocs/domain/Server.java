@@ -58,8 +58,8 @@ public class Server {
 			timer.scheduleAtFixedRate(new TimerTask() {
 				@Override
 				public void run() {
-					thisServer.backupFiles();
 					thisServer.logger.log("Performing files backup now...");
+					thisServer.backupFiles();
 				}
 			}, baseDuration * 2, baseDuration);
 		} catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException | SignatureException | InvalidProtocolBufferException | InvalidAlgorithmParameterException e) {
@@ -147,18 +147,19 @@ public class Server {
 	public void backupFiles() {
 		try {
 			Map<Integer, String> fileDigests = this.serverRepo.getFilesDigests();
-
-			File directory = new File(FILES_DIR);
-			File[] files = directory.listFiles();
-			if (files == null) {
+			if (fileDigests.size() == 0){
 				this.logger.log("No files found to backup.");
 				return;
 			}
 
 			FilesRequest.Builder requestBuilder = FilesRequest.newBuilder();
-
-			for (File file: files) {
-				int fileId = Integer.parseInt(file.getName());
+			for (Map.Entry<Integer,String> fileInfo: fileDigests.entrySet()) {
+				int fileId = fileInfo.getKey();
+				File file = new File(FILES_DIR + fileId);
+				if (!file.exists()){
+					this.logger.log("[WARNING]: There is an inconsistency between the existing files in the database and the files stored.");
+					return;
+				}
 				FileInputStream in = new FileInputStream(file);
 				byte[] fileContent = in.readAllBytes();
 				in.close();
@@ -168,7 +169,7 @@ public class Server {
 								.newBuilder()
 								.setContent(ByteString.copyFrom(fileContent))
 								.setId(fileId)
-								.setDigest(fileDigests.get(fileId))
+								.setDigest(fileInfo.getValue())
 								.build()
 				);
 			}
@@ -215,11 +216,16 @@ public class Server {
 
 			// Check if any files were not backed up. Send an alert in such a case.
 			List<Integer> fileIds = filesResponse.getIdsList();
-			if (fileIds.size() > 0)
+			if (fileIds.size() > 0){
 				this.logger.log("[WARNING] The following files were not backed up since the digest associated to the" +
 						" last change does not match the file's digest: " + Arrays.toString(fileIds.toArray()));
+				this.serverRepo.corruptedFiles(fileIds);
+				fileDigests.keySet().removeAll(fileIds);
+			}
 			else
 				this.logger.log("All files were backed up successfully.");
+			if(fileDigests.size() > 0)
+				this.serverRepo.backupUpdated(fileDigests.keySet());
 		} catch (SQLException | IOException | InvalidAlgorithmParameterException | NoSuchPaddingException
 				| IllegalBlockSizeException | NoSuchAlgorithmException | BadPaddingException
 				| InvalidKeyException | SignatureException e) {

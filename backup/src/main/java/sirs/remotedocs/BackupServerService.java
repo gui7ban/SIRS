@@ -97,7 +97,8 @@ public class BackupServerService extends RemoteDocsBackupGrpc.RemoteDocsBackupIm
                             new IvParameterSpec(this.backupServer.getInitializationVector())
                     )
             );
-
+            
+            
             List<Integer> corruptedFiles = this.backupServer.saveFiles(
                     filesRequest.getFilesList(),
                     filesRequest.getNonce(),
