@@ -147,9 +147,9 @@ Give an example command
 ```
 
 ## Demo
+Below we will give an overview of the main features of our application:
 
-Give a tour of the best features of the application.
-Add screenshots when relevant.
+
 
 ## Deployment
 
