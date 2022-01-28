@@ -26,11 +26,13 @@ import java.util.*;
 public class Server {
 
 	private static final String FILES_DIR = "files/";
+	private static final String PASSWORD_HANDSHAKE = "SIRS2022";
+	private static final String SALT_HANDSHAKE = "BVY30PNQhgmYqiW01x3eWg==";
 	private final ServerRepo serverRepo = new ServerRepo();
 	private final Logger logger = new Logger("Server", "Core");
 	private final Map<String, String> accessTokens = new TreeMap<>();
 	private KeyPair keyPair;
-
+	private SecretKey passwordKey;
 	// Backup Server classes and data
 	private static final int MAX_NONCE = 25000;
 	private final ServerFrontend serverFrontend;
@@ -47,9 +49,9 @@ public class Server {
 
 		try {
 			this.keyPair = AsymmetricCryptoOperations.generateKeyPair();
+            this.passwordKey = SymmetricCryptoOperations.getSecretKey(PASSWORD_HANDSHAKE, Base64.getDecoder().decode(SALT_HANDSHAKE));
 			this.exchangePublicKeys();
 			this.handshake();
-			
 			final int baseDuration = 60 * 1000;
 			final Server thisServer = this;
 			Timer timer = new Timer();
@@ -60,31 +62,32 @@ public class Server {
 					thisServer.logger.log("Performing files backup now...");
 				}
 			}, baseDuration * 2, baseDuration);
-		} catch (NoSuchAlgorithmException e) {
+		} catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException | SignatureException | InvalidProtocolBufferException | InvalidAlgorithmParameterException e) {
 			this.logger.log("Failed to generate key pair for backup server.");
-		}
-	}
-
-	// Backup Server Methods
-	public void exchangePublicKeys() {
-		PublicKeyRequest request = PublicKeyRequest
-				.newBuilder()
-				.setPublicKey(ByteString.copyFrom(this.keyPair.getPublic().getEncoded()))
-				.build();
-
-		PublicKeyResponse response = this.serverFrontend.getBackupServerPublicKey(request);
-		try {
-			this.backupServerPublicKey = AsymmetricCryptoOperations.getPublicKeyFromBytes(
-					response.getKey().toByteArray()
-			);
-			this.logger.log("Successfully exchanged keys with Backup Server!");
-		} catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
 			this.logger.log(e.getMessage());
 		}
 	}
 
-	public void handshake() {
-		try {
+	// Backup Server Methods
+	public void exchangePublicKeys() throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException, BadPaddingException, IllegalBlockSizeException {
+	
+		
+			byte[] publicKeyEncrypted = SymmetricCryptoOperations.encrypt(keyPair.getPublic().getEncoded(), Base64.getDecoder().decode(SALT_HANDSHAKE), passwordKey);
+			PublicKeyRequest request = PublicKeyRequest
+				.newBuilder()
+				.setPublicKey(ByteString.copyFrom(publicKeyEncrypted))
+				.build();
+
+			PublicKeyResponse response = this.serverFrontend.getBackupServerPublicKey(request);
+			byte[] backupPublicKey = SymmetricCryptoOperations.decrypt(response.getKey().toByteArray(), passwordKey, new IvParameterSpec(Base64.getDecoder().decode(SALT_HANDSHAKE)));
+			this.backupServerPublicKey = AsymmetricCryptoOperations.getPublicKeyFromBytes(
+					backupPublicKey
+			);
+			this.logger.log("Successfully exchanged keys with Backup Server!");
+
+	}
+
+	public void handshake() throws NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, SignatureException, InvalidProtocolBufferException, InvalidAlgorithmParameterException {
 			this.backupServerSecretKey = SymmetricCryptoOperations.getRandomSecretKey();
 			this.backupServerIV = SymmetricCryptoOperations.generateIV();
 			this.currentNonce = new SecureRandom().nextInt(MAX_NONCE);
@@ -139,11 +142,6 @@ public class Server {
 
 			this.currentNonce = handshakeResponse.getNonce();
 			this.logger.log("Successful handshake with Backup Server!");
-		} catch (NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException
-				| InvalidKeyException | SignatureException
-				| InvalidAlgorithmParameterException | InvalidProtocolBufferException e) {
-			this.logger.log(e.getMessage());
-		}
 	}
 
 	public void backupFiles() {

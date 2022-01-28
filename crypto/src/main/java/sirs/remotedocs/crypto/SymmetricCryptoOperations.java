@@ -42,10 +42,7 @@ public class SymmetricCryptoOperations {
         throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException,
         InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        if (iv == null)
-            cipher.init(Cipher.ENCRYPT_MODE, key);
-        else 
-            cipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv));
+        cipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv));
 
         return cipher.doFinal(input);
     }
@@ -54,7 +51,7 @@ public class SymmetricCryptoOperations {
     public static byte[] decrypt(byte[] input, SecretKey key, IvParameterSpec iv)
         throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException,
         InvalidKeyException, BadPaddingException, IllegalBlockSizeException {  
-
+        
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         cipher.init(Cipher.DECRYPT_MODE, key, iv);
         return cipher.doFinal(input);

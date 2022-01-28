@@ -25,10 +25,10 @@ public class BackupServerService extends RemoteDocsBackupGrpc.RemoteDocsBackupIm
     @Override
     public void getPublicKey(PublicKeyRequest request, StreamObserver<PublicKeyResponse> responseObserver) {
         try {
-            PublicKey publicKey = this.backupServer.getPublicKey(request.getPublicKey().toByteArray());
+            byte[] publicKey = this.backupServer.getPublicKey(request.getPublicKey().toByteArray());
             PublicKeyResponse response = PublicKeyResponse
                     .newBuilder()
-                    .setKey(ByteString.copyFrom(publicKey.getEncoded()))
+                    .setKey(ByteString.copyFrom(publicKey))
                     .build();
 
             responseObserver.onNext(response);

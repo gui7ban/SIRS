@@ -6,7 +6,12 @@ import sirs.remotedocs.crypto.HashOperations;
 import sirs.remotedocs.crypto.SymmetricCryptoOperations;
 import sirs.remotedocs.exceptions.BackupServerException;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -17,8 +22,11 @@ import java.util.*;
 public class BackupServer {
 
     private static final String FILES_DIR = "files/";
+    private static final String PASSWORD_HANDSHAKE = "SIRS2022";
+    private static final String SALT_HANDSHAKE = "BVY30PNQhgmYqiW01x3eWg==";
     private KeyPair keyPair;
     private SecretKey secretKey;
+    private SecretKey passwordKey;
     private PublicKey serverPublicKey;
     private byte[] serverInitializationVector;
     private final Map<Integer, Boolean> nonces = new HashMap<>();
@@ -30,8 +38,13 @@ public class BackupServer {
             if(!f.mkdir())
                 System.out.println("Error creating files directory.");
             this.keyPair = AsymmetricCryptoOperations.generateKeyPair();
-        } catch (NoSuchAlgorithmException e) {
+            this.passwordKey = SymmetricCryptoOperations.getSecretKey(PASSWORD_HANDSHAKE, Base64.getDecoder().decode(SALT_HANDSHAKE));
+
+        } catch (NoSuchAlgorithmException e ) {
             System.out.println("Failed to generate key pair for backup server.");
+            System.exit(-1);
+        } catch(InvalidKeySpecException e) {
+            System.out.println("Failed to generate password for backup server.");
             System.exit(-1);
         }
     }
@@ -44,14 +57,16 @@ public class BackupServer {
         return this.serverInitializationVector;
     }
 
-    public PublicKey getPublicKey(byte[] serverPublicKey) throws BackupServerException {
+    public byte[] getPublicKey(byte[] serverPublicKeyEncrypted) throws BackupServerException {
         if (keyPair == null)
             throw new BackupServerException("No public key available at this time.");
 
         try {
+            byte[] serverPublicKey = SymmetricCryptoOperations.decrypt(serverPublicKeyEncrypted, passwordKey, new IvParameterSpec(Base64.getDecoder().decode(SALT_HANDSHAKE)));
             this.serverPublicKey = AsymmetricCryptoOperations.getPublicKeyFromBytes(serverPublicKey);
-            return this.keyPair.getPublic();
-        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            byte[] publicKeyEncrypted = SymmetricCryptoOperations.encrypt(keyPair.getPublic().getEncoded(), Base64.getDecoder().decode(SALT_HANDSHAKE), passwordKey);
+            return publicKeyEncrypted;
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException | NoSuchPaddingException | InvalidAlgorithmParameterException | BadPaddingException | IllegalBlockSizeException e) {
             throw new BackupServerException("Error exchanging public keys.");
         }
     }
