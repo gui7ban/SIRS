@@ -147,9 +147,23 @@ Give an example command
 ```
 
 ## Demo
-Below we will give an overview of the main features of our application:
+Below we will give an overview of certain interesting features of our application:
+
+1. This is shown when the owner of a file revokes the permission from a specific user, to access a specific file.
+![Permission Revoked](permission_revoked.png)
 
 
+2. This message is shown when the server detects an illegal modification to the file.
+In this instance, the file is not downloaded to the client.
+![Tampered File](tampered_open.png)
+![Tampered File2](tampered_error.png)
+   
+
+3. When the client does not have permission to edit a file, the server does not allow
+them to edit it.
+![Permission Viewer](file_editor.png)
+![Permission Viewer2](no_permission.png)
+   
 
 ## Deployment
 
