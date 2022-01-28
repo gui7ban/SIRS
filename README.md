@@ -1,6 +1,6 @@
 # SIRS Remote Docs
 
-[Logo](client/src/main/resources/hacker.png)
+![Logo](client/src/main/resources/hacker.png "RemoteDocs logo)
 
 Our project allows several users to create and share files to a remote server in a secure and efficient manner, while focusing on the prevention ransomware attacks' consequences:
 The files are encrypted end-to-end (no one with access to the server is able to access the contents of the files stored there)
