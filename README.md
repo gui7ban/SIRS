@@ -133,19 +133,6 @@ $ cd client
 $ mvn exec:java
 ```
 
-### Testing
-
-Explain how to run the automated tests for this system.
-
-Give users explicit instructions on how to run all necessary tests.
-Explain the libraries, such as JUnit, used for testing your software and supply all necessary commands.
-
-Explain what these tests test and why
-
-```
-Give an example command
-```
-
 ## Demo
 Below we will give an overview of certain interesting features of our application:
 
